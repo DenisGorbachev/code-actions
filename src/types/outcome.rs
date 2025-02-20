@@ -1,1 +1,1 @@
-pub type Outcome<T = ()> = helpful::Result<T>;
+pub type Outcome<T = ()> = anyhow::Result<T>;
