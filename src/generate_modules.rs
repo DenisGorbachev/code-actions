@@ -99,6 +99,7 @@ pub fn get_module_declarations(file: &mut File, path: &Utf8Path) -> Outcome<Vec<
     }
 }
 
+// TODO: Don't generate `pub use` declarations for modules that contain only macros
 pub fn get_mod_pub_use_declarations(path: &Utf8Path) -> Outcome<Vec<String>> {
     let file_stem = FileStem::try_from(path)?;
     Ok(vec![
