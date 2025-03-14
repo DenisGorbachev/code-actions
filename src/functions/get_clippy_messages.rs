@@ -17,7 +17,7 @@ pub fn get_clippy_messages(workspace_root: impl AsRef<Path>) -> io::Result<impl 
     // Get the stdout of the child process
     let stdout = child
         .stdout
-        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get child stdout"))?;
+        .ok_or_else(|| io::Error::other("Failed to get child stdout"))?;
 
     dbg!(&stdout);
     // Create a BufReader
