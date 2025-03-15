@@ -55,3 +55,12 @@ pub fn write_all_to_file_if_not_exists<P: AsRef<Path>, B: AsRef<[u8]>>(filename:
 
     file.write_all(buf.as_ref())
 }
+
+pub fn find_replace_all<'a, 'b>(path: impl AsRef<Path>, iter: impl IntoIterator<Item = (&'a str, &'b str)>) -> io::Result<()> {
+    let mut contents = fs_err::read_to_string(path.as_ref())?;
+    for (from, to) in iter.into_iter() {
+        contents = contents.replace(from, to);
+    }
+    fs_err::write(path.as_ref(), contents)?;
+    Ok(())
+}

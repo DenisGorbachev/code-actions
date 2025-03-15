@@ -58,7 +58,7 @@ impl Utf8Path {
             .take_while(move |it| *it != ancestor)
     }
 
-    pub fn parents_up_to<'a>(&'a self, parent: &'a Self) -> impl Iterator<Item = &'a Self> {
+    pub fn parents_up_to<'a, 'b: 'a>(&'a self, parent: &'b Self) -> impl Iterator<Item = &'a Self> {
         self.0
             .parents()
             .map(Utf8Path::new)

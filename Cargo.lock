@@ -1628,7 +1628,7 @@ checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
 [[package]]
 name = "standard-traits"
 version = "0.1.0"
-source = "git+https://github.com/DenisGorbachev/standard-traits#8f285e69b86c5469a41e7f873eefeb318e561dc5"
+source = "git+https://github.com/DenisGorbachev/standard-traits#31827998ebe6c13512f864ea63c0ab477da8ed5d"
 dependencies = [
  "camino",
  "proc-macro2",
@@ -1681,7 +1681,7 @@ dependencies = [
 [[package]]
 name = "syn-more"
 version = "0.1.0"
-source = "git+https://github.com/DenisGorbachev/syn-more#c95e38e9cdcf39c196789c84c57c297f0bccf5e2"
+source = "git+https://github.com/DenisGorbachev/syn-more#8c8105d3d5bbb58ac1d9d2b7377424dc30b29a2a"
 dependencies = [
  "derive_more 2.0.1",
  "fmt-derive",

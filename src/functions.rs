@@ -8,4 +8,5 @@ pub mod get_table_from_item;
 pub mod get_the_only_key;
 pub mod label;
 pub mod modify_rust_file;
+pub mod parent_candidates;
 pub mod parse_key_value;

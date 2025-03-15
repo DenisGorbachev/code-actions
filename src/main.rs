@@ -2,47 +2,26 @@ use clap::{value_parser, Parser, Subcommand};
 use stub_macro::stub;
 use time::OffsetDateTime;
 
-use crate::types::outcome::Outcome;
-use types::module_template::ModuleTemplate;
+use code_actions::types::module_template::ModuleTemplate;
+use code_actions::types::outcome::Outcome;
 
-use crate::add_dependency::{add_global_dependency_from_version, add_local_dependency_for_package_from_name, remove_workspace_and_package_dependency};
-use crate::clean_external_path_deps::clean_external_path_deps;
-use crate::extensions::camino::utf8_path::Utf8Path;
-use crate::extensions::camino::utf8_path_buf::Utf8PathBuf;
-use crate::fix_name::fix_name;
-use crate::functions::get_impl_file_contents::generate_impl_from_anchor_trait_path;
-use crate::generate_file::{append_to_module_file_from_path, create_module_file_from_anchor_label, get_module_file_from_label};
-use crate::generate_freewrite_file_from_anchor::generate_freewrite_file_from_anchor;
-use crate::generate_module::{generate_module_from_anchor_subdir_label, generate_module_from_path};
-use crate::generate_package_from_anchor_name::generate_package_from_anchor_name;
-use crate::get_freewrite_path_from_anchor_path::get_freewrite_path_from_anchor;
-use crate::get_relative_path::get_relative_path_anchor_subdir_name_suffix;
-use crate::remove_module_by_path::remove_module_by_path;
-use crate::types::label::Label;
-
-pub mod add_dependency;
-pub mod constants;
-pub mod experiment;
-pub mod extensions;
-pub mod functions;
-pub mod generate_enum;
-pub mod generate_error_enum;
-pub mod generate_error_struct;
-pub mod generate_file;
-pub mod generate_impl_from;
-pub mod generate_module;
-pub mod generate_modules;
-pub mod generate_struct;
-pub mod get_freewrite_path_from_anchor_path;
-pub mod get_newtype_wrapper_struct_token_stream;
-pub mod get_relative_path;
-pub mod join_blocks;
-pub mod primary_module;
-pub mod test_helpers;
-pub mod tests;
-pub mod traits;
-pub mod types;
-pub mod utils;
+use code_actions::add_dependency::{add_global_dependency_from_version, add_local_dependency_for_package_from_name, remove_workspace_and_package_dependency};
+use code_actions::clean_external_path_deps::clean_external_path_deps;
+use code_actions::extensions::camino::utf8_path::Utf8Path;
+use code_actions::extensions::camino::utf8_path_buf::Utf8PathBuf;
+use code_actions::fix_imports;
+use code_actions::fix_name::fix_name;
+use code_actions::functions::get_impl_file_contents::generate_impl_from_anchor_trait_path;
+use code_actions::generate_file::{append_to_module_file_from_path, create_module_file_from_anchor_label, get_module_file_from_label};
+use code_actions::generate_freewrite_file_from_anchor::generate_freewrite_file_from_anchor;
+use code_actions::generate_module::{generate_module_from_anchor_subdir_label, generate_module_from_path};
+use code_actions::generate_package_from_anchor_name::generate_package_from_anchor_name;
+use code_actions::get_freewrite_path_from_anchor_path::get_freewrite_path_from_anchor;
+use code_actions::get_relative_path::get_relative_path_anchor_subdir_name_suffix;
+use code_actions::remove_impossible_derives::remove_impossible_derives;
+use code_actions::remove_module_by_path::remove_module_by_path;
+use code_actions::traits::discard::Discard;
+use code_actions::types::label::Label;
 
 #[derive(Parser)]
 #[command(
@@ -347,26 +326,3 @@ pub fn init_tracing_subscriber() {
     // dbg!(&subscriber);
     subscriber.init();
 }
-
-pub mod clean_external_path_deps;
-pub mod extract_package_to_repository;
-mod fix_imports;
-pub mod fix_name;
-pub mod generate_fn;
-pub mod generate_freewrite_file_from_anchor;
-pub mod generate_package_from_anchor_name;
-pub mod generate_trait;
-pub mod generate_type_alias;
-pub mod get_subtype_struct_token_stream;
-pub mod remove_module_by_path;
-pub mod statics;
-
-use crate::remove_impossible_derives::remove_impossible_derives;
-use crate::traits::discard::Discard;
-pub use fix_imports::*;
-
-#[allow(dead_code)]
-mod add_blank_lines;
-#[cfg(test)]
-mod assertions;
-pub mod remove_impossible_derives;
