@@ -2,8 +2,8 @@ use crate::traits::rename_module::RenameModule;
 use derive_more::Error;
 use fmt_derive::Display;
 
-impl RenameModule for syn::File {
-    type Output = Result<Self, SynFileRenameModuleError>;
+impl RenameModule for &mut syn::File {
+    type Output = Result<(), SynFileRenameModuleError>;
 
     fn rename_module(self, module_name_old: &str, module_name_new: &str) -> Self::Output {
         // Check if new name equals old name
@@ -20,11 +20,8 @@ impl RenameModule for syn::File {
             }
         }
 
-        // Create a new file with renamed modules and use statements
-        let mut new_file = self.clone();
-
         // Rename the module declarations and use statements
-        for item in &mut new_file.items {
+        for item in &mut self.items {
             match item {
                 // Handle module declarations
                 syn::Item::Mod(module) => {
@@ -40,7 +37,7 @@ impl RenameModule for syn::File {
             }
         }
 
-        Ok(new_file)
+        Ok(())
     }
 }
 
@@ -120,7 +117,8 @@ pub struct Foo {}
     #[test]
     fn must_rename_module() {
         let input = input();
-        let output = input
+        let mut output = input.clone();
+        output
             .rename_module("foo", "qux")
             .expect("should rename successfully");
         let output_string_actual = unparse(&output);

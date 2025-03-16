@@ -2,12 +2,13 @@ use crate::constants::SRC_DIR_NAME;
 use crate::extensions::camino::utf8_path::Utf8Path;
 use crate::extensions::camino::utf8_path_buf::Utf8PathBuf;
 use crate::functions::parent_candidates::parent_candidates;
-use crate::functions::rename_declarations::rename_declarations_path;
+use crate::traits::rename_module::RenameModule;
 use crate::types::outcome::Outcome;
 use anyhow::Context;
 use heck::ToSnakeCase;
+use prettyplease::unparse;
 use proc_macro2::Ident;
-use syn_more::{maybe_ident_for_item, parse_main_item_from_path};
+use syn_more::{maybe_ident_for_item, parse_main_item_from_path, SynFrom};
 
 /// This function simply renames the file and the `mod` declaration in the parent module. It doesn't rename all references.
 // TODO: Ensure that every reference is renamed, too (can only do that with rust-analyzer)
@@ -25,7 +26,9 @@ pub fn fix_name(path: &Utf8Path) -> Outcome {
         let parent = parent_candidates(path, src.as_path()).next();
         fs_err::rename(path, path_new)?;
         if let Some(parent) = parent {
-            rename_declarations_path(parent.as_path(), module_name_old, &module_name_new)?
+            let mut file = syn::File::syn_from(parent.as_path().as_std_path())?;
+            file.rename_module(module_name_old, &module_name_new)?;
+            fs_err::write(parent.as_path(), unparse(&file))?;
         }
     }
     Ok(())
