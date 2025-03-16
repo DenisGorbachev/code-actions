@@ -41,4 +41,4 @@ pub use fix_imports::*;
 mod add_blank_lines;
 #[cfg(test)]
 mod assertions;
-pub mod remove_impossible_derives;
+pub mod fix_impossible_derives;

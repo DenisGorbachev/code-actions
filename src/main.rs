@@ -10,6 +10,7 @@ use code_actions::clean_external_path_deps::clean_external_path_deps;
 use code_actions::extensions::camino::utf8_path::Utf8Path;
 use code_actions::extensions::camino::utf8_path_buf::Utf8PathBuf;
 use code_actions::fix_imports;
+use code_actions::fix_impossible_derives::fix_impossible_derives;
 use code_actions::fix_name::fix_name;
 use code_actions::functions::get_impl_file_contents::generate_impl_from_anchor_trait_path;
 use code_actions::generate_file::{append_to_module_file_from_path, create_module_file_from_anchor_label, get_module_file_from_label};
@@ -18,7 +19,6 @@ use code_actions::generate_module::{generate_module_from_anchor_subdir_label, ge
 use code_actions::generate_package_from_anchor_name::generate_package_from_anchor_name;
 use code_actions::get_freewrite_path_from_anchor_path::get_freewrite_path_from_anchor;
 use code_actions::get_relative_path::get_relative_path_anchor_subdir_name_suffix;
-use code_actions::remove_impossible_derives::remove_impossible_derives;
 use code_actions::remove_module_by_path::remove_module_by_path;
 use code_actions::traits::discard::Discard;
 use code_actions::types::label::Label;
@@ -115,9 +115,9 @@ impl Cli {
             FixName {
                 path,
             } => fix_name(path.as_ref()),
-            RemoveImpossibleDerives {
+            FixImpossibleDerives {
                 anchor,
-            } => remove_impossible_derives(anchor.as_ref()),
+            } => fix_impossible_derives(anchor.as_ref()),
             CleanExternalPathDeps {
                 yes,
                 anchor,
@@ -192,7 +192,7 @@ enum Command {
         #[arg(value_parser = value_parser!(Utf8PathBuf))]
         path: Utf8PathBuf,
     },
-    RemoveImpossibleDerives {
+    FixImpossibleDerives {
         #[arg(value_parser = value_parser!(Utf8PathBuf))]
         anchor: Utf8PathBuf,
     },

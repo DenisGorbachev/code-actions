@@ -15,7 +15,7 @@ use syn_more::{get_main_item_mut, get_struct_or_enum_attrs_mut};
 
 pub type PunctuatedIdents = Punctuated<Ident, Token![,]>;
 
-pub fn remove_impossible_derives(anchor: &Utf8Path) -> Outcome {
+pub fn fix_impossible_derives(anchor: &Utf8Path) -> Outcome {
     let package_info = PackageInfo::try_from(anchor)?;
     let project_root = package_info.project_root().require()?;
     let compiler_messages = get_clippy_compiler_messages(project_root.as_path())?;
@@ -81,7 +81,7 @@ impl FilterOf<Ident> for Vec<Ident> {
 #[cfg(test)]
 mod tests {
     use crate::extensions::camino::utf8_path_buf::Utf8PathBuf;
-    use crate::remove_impossible_derives::remove_impossible_derives;
+    use crate::fix_impossible_derives::fix_impossible_derives;
     use crate::test_helpers::{get_lib_rs_path, get_temp_lib_root};
     use crate::types::outcome::Outcome;
     use prettyplease::unparse;
@@ -128,7 +128,7 @@ mod tests {
         let lib_rs = get_lib_rs_path(&root);
         fs::write(&lib_rs, item_before.to_token_stream().to_string())?;
         let lib_rs_utf8 = Utf8PathBuf::try_from(lib_rs.as_path())?;
-        remove_impossible_derives(lib_rs_utf8.as_ref())?;
+        fix_impossible_derives(lib_rs_utf8.as_ref())?;
         let item = Item::from(item_after);
         let file_actual = fs::read_to_string(&lib_rs)?;
         let file_expected = unparse(&item.get::<File>());
