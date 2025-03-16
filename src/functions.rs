@@ -10,3 +10,4 @@ pub mod label;
 pub mod modify_rust_file;
 pub mod parent_candidates;
 pub mod parse_key_value;
+pub mod rename_declarations;

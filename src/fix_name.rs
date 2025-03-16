@@ -2,9 +2,9 @@ use crate::constants::SRC_DIR_NAME;
 use crate::extensions::camino::utf8_path::Utf8Path;
 use crate::extensions::camino::utf8_path_buf::Utf8PathBuf;
 use crate::functions::parent_candidates::parent_candidates;
+use crate::functions::rename_declarations::rename_declarations_path;
 use crate::types::outcome::Outcome;
 use anyhow::Context;
-use fs_err::read_to_string;
 use heck::ToSnakeCase;
 use proc_macro2::Ident;
 use syn_more::{maybe_ident_for_item, parse_main_item_from_path};
@@ -25,17 +25,9 @@ pub fn fix_name(path: &Utf8Path) -> Outcome {
         let parent = parent_candidates(path, src.as_path()).next();
         fs_err::rename(path, path_new)?;
         if let Some(parent) = parent {
-            rename_declarations(parent.as_path(), module_name_old, &module_name_new)?
+            rename_declarations_path(parent.as_path(), module_name_old, &module_name_new)?
         }
     }
-    Ok(())
-}
-
-pub fn rename_declarations(parent: &Utf8Path, child_module_name_old: &str, child_module_name_new: &str) -> Outcome {
-    let contents = read_to_string(parent)?;
-    let contents = contents.replace(&format!("mod {}", child_module_name_old), &format!("mod {}", child_module_name_new));
-    let contents = contents.replace(&format!("use {}", child_module_name_old), &format!("use {}", child_module_name_new));
-    fs_err::write(parent, contents)?;
     Ok(())
 }
 
