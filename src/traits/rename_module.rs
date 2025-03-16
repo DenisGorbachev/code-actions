@@ -4,6 +4,6 @@ pub trait RenameModule {
     fn rename_module(self, module_name_old: &str, module_name_new: &str) -> Self::Output;
 }
 
-mod impl_rename_module_for_token_stream;
+mod impl_rename_module_for_syn_file;
 
-pub use impl_rename_module_for_token_stream::*;
+pub use impl_rename_module_for_syn_file::*;
