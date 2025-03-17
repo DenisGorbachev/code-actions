@@ -113,19 +113,26 @@ impl Cli {
                 }
             }
             FixName {
-                path,
-            } => fix_name(path.as_ref()),
+                anchor,
+            } => fix_name(anchor.as_ref()),
             FixImpossibleDerives {
                 anchor,
             } => fix_impossible_derives(anchor.as_ref()),
-            CleanExternalPathDeps {
-                yes,
+            FixMulti {
                 anchor,
-            } => clean_external_path_deps(anchor.as_ref(), !yes),
+            } => {
+                fix_name(anchor.as_ref())?;
+                fix_impossible_derives(anchor.as_ref())?;
+                Ok(())
+            }
             FixImports {
                 yes,
                 anchor,
             } => fix_imports(anchor.as_ref(), yes),
+            CleanExternalPathDeps {
+                yes,
+                anchor,
+            } => clean_external_path_deps(anchor.as_ref(), !yes),
             Print {
                 command,
             } => {
@@ -190,19 +197,24 @@ enum Command {
     },
     FixName {
         #[arg(value_parser = value_parser!(Utf8PathBuf))]
-        path: Utf8PathBuf,
+        anchor: Utf8PathBuf,
     },
     FixImpossibleDerives {
         #[arg(value_parser = value_parser!(Utf8PathBuf))]
         anchor: Utf8PathBuf,
     },
-    CleanExternalPathDeps {
+    /// Fix name and impossible derives
+    FixMulti {
+        #[arg(value_parser = value_parser!(Utf8PathBuf))]
+        anchor: Utf8PathBuf,
+    },
+    FixImports {
         #[arg(long)]
         yes: bool,
         #[arg(value_parser = value_parser!(Utf8PathBuf))]
         anchor: Utf8PathBuf,
     },
-    FixImports {
+    CleanExternalPathDeps {
         #[arg(long)]
         yes: bool,
         #[arg(value_parser = value_parser!(Utf8PathBuf))]
