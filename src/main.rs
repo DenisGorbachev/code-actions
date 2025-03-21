@@ -121,8 +121,9 @@ impl Cli {
             FixMulti {
                 anchor,
             } => {
-                fix_name(anchor.as_ref())?;
+                // Run `fix_impossible_derives` first, because fix_name would change the file name
                 fix_impossible_derives(anchor.as_ref())?;
+                fix_name(anchor.as_ref())?;
                 Ok(())
             }
             FixImports {

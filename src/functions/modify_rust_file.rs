@@ -21,7 +21,8 @@ pub fn modify_and_format_rust_file<Modify>(path: impl AsRef<Path>, manifest_path
 where
     Modify: FnOnce(syn::File) -> Outcome<syn::File>,
 {
-    // TODO: This function does not preserve regular comments starting with "//"
+    // TODO: This function does not preserve regular comments starting with "//" (use a parser from rust-analyzer instead of syn?)
+    // TODO: Return an error if the file contains "//"
     modify_rust_file(path.as_ref(), modify)?;
     format_cargo_fmt(manifest_path)?;
     Ok(())
