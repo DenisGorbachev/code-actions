@@ -140,8 +140,7 @@ impl Cli {
                 target,
             } => {
                 let sh = Shell::new()?;
-                let confirm = |_prompt: &str| -> xshell::Result<bool> { todo!() };
-                extract_package_into_repository(sh, confirm, source, target)
+                extract_package_into_repository(sh, source, target)
             }
             Print {
                 command,
