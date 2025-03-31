@@ -1,14 +1,15 @@
 use clap::{value_parser, Parser, Subcommand};
-use stub_macro::stub;
-use time::OffsetDateTime;
-
 use code_actions::types::module_template::ModuleTemplate;
 use code_actions::types::outcome::Outcome;
+use stub_macro::stub;
+use time::OffsetDateTime;
+use xshell::Shell;
 
 use code_actions::add_dependency::{add_global_dependency_from_version, add_local_dependency_for_package_from_name, remove_workspace_and_package_dependency};
 use code_actions::clean_external_path_deps::clean_external_path_deps;
 use code_actions::extensions::camino::utf8_path::Utf8Path;
 use code_actions::extensions::camino::utf8_path_buf::Utf8PathBuf;
+use code_actions::extract_package_into_repository::extract_package_into_repository;
 use code_actions::fix_imports;
 use code_actions::fix_impossible_derives::fix_impossible_derives;
 use code_actions::fix_name::fix_name;
@@ -134,6 +135,14 @@ impl Cli {
                 yes,
                 anchor,
             } => clean_external_path_deps(anchor.as_ref(), !yes),
+            ExtractPackageIntoRepository {
+                source,
+                target,
+            } => {
+                let sh = Shell::new()?;
+                let confirm = |_prompt: &str| -> xshell::Result<bool> { todo!() };
+                extract_package_into_repository(sh, confirm, source, target)
+            }
             Print {
                 command,
             } => {
@@ -220,6 +229,14 @@ enum Command {
         yes: bool,
         #[arg(value_parser = value_parser!(Utf8PathBuf))]
         anchor: Utf8PathBuf,
+    },
+    ExtractPackageIntoRepository {
+        /// Directory of the package to extract from
+        #[arg(value_parser = value_parser!(Utf8PathBuf))]
+        source: Utf8PathBuf,
+        /// Directory of the repository to extract into
+        #[arg(value_parser = value_parser!(Utf8PathBuf))]
+        target: Utf8PathBuf,
     },
     Print {
         #[command(subcommand)]

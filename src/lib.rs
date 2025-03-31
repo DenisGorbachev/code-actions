@@ -23,7 +23,6 @@ pub mod types;
 pub mod utils;
 
 pub mod clean_external_path_deps;
-pub mod extract_package_to_repository;
 mod fix_imports;
 pub mod fix_name;
 pub mod generate_fn;
@@ -41,4 +40,5 @@ pub use fix_imports::*;
 mod add_blank_lines;
 #[cfg(test)]
 mod assertions;
+pub mod extract_package_into_repository;
 pub mod fix_impossible_derives;
