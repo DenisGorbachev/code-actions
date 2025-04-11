@@ -1,20 +1,34 @@
 use crate::extensions::camino::utf8_path_buf::Utf8PathBuf;
 use crate::types::outcome::Outcome;
+use anyhow::Context;
 use derive_more::Error;
 use std::io;
 use xshell::{cmd, Cmd, Shell};
 
 pub fn extract_package_into_repository(sh: Shell, source: Utf8PathBuf, target: Utf8PathBuf) -> Outcome {
+    let source_src = source.join("src");
     let target_src = target.join("src");
+    let target_info = PackageInfo::try_from(target.as_path())?;
+    let target_name = target_info
+        .name()
+        .ok_or_not_found::<String>()
+        .context(format!("Could not find package name in {target}"))?;
+    let source_workspace_root = source.as_path().get_workspace_root()?;
     if target_src.try_exists()? {
         confirm_run(cmd!(sh, "rm -r {target_src}"), confirm, |cmd| cmd.run_interactive())?;
     }
-    confirm_run(cmd!(sh, "mv {source}/src"), confirm, |cmd| cmd.run_interactive())?;
+    if source_src.try_exists()? {
+        confirm_run(cmd!(sh, "mv {source_src} {target_src}"), confirm, |cmd| cmd.run_interactive())?;
+    } else {
+        println!("{source_src} does not exist; skipping");
+    }
     let tasks = [
         "Move dependencies",
         "Remove package from workspace.members in Cargo.toml",
         &format!("ff {target}"),
-        &format!("ff {source}"),
+        &format!("Add \"{target_name}\" dependency to {source_workspace_root}"),
+        &format!("Fix the code in {source_workspace_root}"),
+        &format!("ff {source_workspace_root}"),
     ];
     for task in tasks {
         confirm(task)?;
@@ -31,8 +45,11 @@ pub fn confirm_run<T: Default, ConfirmErr, RunErr>(cmd: Cmd, confirm: impl FnOnc
     }
 }
 
+use crate::traits::cargo_info::CargoInfo;
+use crate::types::package_info::PackageInfo;
 use dialoguer::Confirm;
 use fmt_derive::Display;
+use not_found_error::OkOrNotFound;
 
 pub fn confirm(prompt: &str) -> io::Result<bool> {
     Confirm::new()

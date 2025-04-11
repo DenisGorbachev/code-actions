@@ -15,6 +15,13 @@ pub struct PackageInfo {
 }
 
 impl PackageInfo {
+    pub fn name(&self) -> Option<&str> {
+        self.package_manifest
+            .get("package")
+            .and_then(|item| item.get("name"))
+            .and_then(|t| t.as_str())
+    }
+
     pub fn as_refs(&self) -> (&TomlFile, Option<&TomlFile>) {
         (&self.package_manifest, self.workspace_manifest.as_ref())
     }
