@@ -4,20 +4,49 @@
 
 # Rust Code Actions
 
-[![Build](https://github.com/DenisGorbachev/code-actions/actions/workflows/ci.yml/badge.svg)](https://github.com/DenisGorbachev/code-actions)
+
 
 ## Installation
+
+Install as executable:
+
+```shell
+cargo install --locked code-actions
+```
+
+Install as library dependency in your package:
 
 ```shell
 cargo add code-actions
 ```
 
+## Usage
+
+```shell
+Utilities for writing Rust code quickly
+
+Usage: code-actions <COMMAND>
+
+Commands:
+  add-dependency                   
+  remove-dependency                
+  generate                         
+  append                           
+  remove                           
+  fix-name                         
+  fix-impossible-derives           
+  fix-multi                        Fix name and impossible derives
+  fix-imports                      
+  clean-external-path-deps         
+  extract-package-into-repository  
+  print                            
+  help                             Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+```
+
 ## Gratitude
 
 Like the project? [⭐ Star this repo](https://github.com/DenisGorbachev/code-actions) on GitHub!
-
-## License
-
-[Apache License 2.0](LICENSE-APACHE) or [MIT License](LICENSE-MIT) at your option.
-
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in this crate by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
