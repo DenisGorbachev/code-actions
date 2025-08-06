@@ -48,7 +48,7 @@ impl Utf8Path {
 
     pub fn get_src_root(&self) -> Outcome<&Utf8Path> {
         self.find_src_root()
-            .with_context(|| format!("Could not find the package root (a directory containing {} and {}), starting from {}", CARGO_TOML_FILE_NAME, SRC_DIR_NAME, self))
+            .with_context(|| format!("Could not find the package root (a directory containing {CARGO_TOML_FILE_NAME} and {SRC_DIR_NAME}), starting from {self}"))
     }
 
     pub fn ancestors_up_to<'a>(&'a self, ancestor: &'a Self) -> impl Iterator<Item = &'a Self> {

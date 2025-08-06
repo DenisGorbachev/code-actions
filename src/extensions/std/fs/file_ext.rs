@@ -27,7 +27,7 @@ impl FileExt for File {
                 .iter()
                 .any(|existing| existing.trim() == line.trim());
             if !line_exists {
-                writeln!(self, "{}", line)?;
+                writeln!(self, "{line}")?;
             }
         }
         Ok(())

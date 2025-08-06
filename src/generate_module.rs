@@ -30,7 +30,7 @@ pub fn generate_module_from_path(path: impl AsRef<Utf8Path>) -> Outcome<File> {
 
 pub fn generate_module_with_dir_from_parent_dir_and_stem(parent_dir: impl AsRef<Utf8Path>, stem: &str) -> Outcome {
     let parent_dir = parent_dir.as_ref();
-    let filename = format!("{}.rs", stem);
+    let filename = format!("{stem}.rs");
     let dirname = stem;
     let dir = parent_dir.join(dirname);
     let file = parent_dir.join(filename);

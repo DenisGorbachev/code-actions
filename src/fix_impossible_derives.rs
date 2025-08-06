@@ -22,7 +22,7 @@ pub fn fix_impossible_derives(anchor: &Utf8Path) -> Outcome {
     let impossible_derives = filter_map_impossible_derives(compiler_messages).collect_vec();
     let manifest_path_buf = project_root.manifest_path_buf();
     modify_and_format_rust_file(anchor, manifest_path_buf, |mut file| -> Outcome<File> {
-        let item = get_main_item_mut(&mut file).with_context(|| format!("Main item not found in \"{}\"", anchor))?;
+        let item = get_main_item_mut(&mut file).with_context(|| format!("Main item not found in \"{anchor}\""))?;
         let attributes = get_struct_or_enum_attrs_mut(item).context("Main item must be a struct or enum")?;
         remove_derives_many(attributes, &impossible_derives);
         // TODO: search for a way to modify Rust code while preserving comments (options: see rust-analyzer)

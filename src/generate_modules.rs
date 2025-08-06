@@ -14,10 +14,10 @@ use crate::extensions::std::path::file_stem::FileStem;
 use crate::primary_module::get_primary_module_path;
 
 pub fn get_str_from_option_os_str<'a>(input: Option<&'a OsStr>, name: &str) -> &'a str {
-    let os_str = input.unwrap_or_else(|| panic!("{} should be present", name));
+    let os_str = input.unwrap_or_else(|| panic!("{name} should be present"));
     os_str
         .to_str()
-        .unwrap_or_else(|| panic!("{} should be convertible to str", name))
+        .unwrap_or_else(|| panic!("{name} should be convertible to str"))
 }
 
 pub fn generate_modules(path: &Utf8Path) -> Outcome {

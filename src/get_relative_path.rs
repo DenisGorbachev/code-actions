@@ -21,7 +21,7 @@ pub fn get_relative_path_anchor_subdir_filename(anchor: &Utf8Path, subdir: &str,
 }
 
 pub fn get_relative_path_anchor_stem_extension(anchor: &Utf8Path, stem: &str, extension: &str) -> Outcome<Utf8PathBuf> {
-    let filename = format!("{}.{}", stem, extension);
+    let filename = format!("{stem}.{extension}");
     get_relative_path_anchor_filename(anchor, &filename)
 }
 
@@ -35,7 +35,7 @@ pub fn get_relative_path_anchor_label_rs(anchor: &Utf8Path, label: &LabelSlice) 
 }
 
 pub fn get_relative_path_anchor_subdir_stem_rs(anchor: &Utf8Path, subdir: &str, stem: &str) -> Outcome<Utf8PathBuf> {
-    let filename = format!("{}.rs", stem);
+    let filename = format!("{stem}.rs");
     get_relative_path_anchor_subdir_filename(anchor, subdir, &filename)
 }
 

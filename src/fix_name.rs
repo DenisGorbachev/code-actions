@@ -17,7 +17,7 @@ pub fn fix_name(path: &Utf8Path) -> Outcome {
     let src = root.join(SRC_DIR_NAME);
     let ident = main_ident(path)?;
     let module_name_new = ident.to_string().to_snake_case();
-    let file_name = format!("{}.rs", module_name_new);
+    let file_name = format!("{module_name_new}.rs");
     let path_new = Utf8PathBuf::from(path.with_file_name(file_name));
     if !path_new.as_path().eq(path) {
         let module_name_old = path
@@ -35,7 +35,7 @@ pub fn fix_name(path: &Utf8Path) -> Outcome {
 }
 
 pub fn main_ident(anchor: &Utf8Path) -> Outcome<Ident> {
-    let item = parse_main_item_from_path(anchor)?.with_context(|| format!("Main item not found in \"{}\"", anchor))?;
+    let item = parse_main_item_from_path(anchor)?.with_context(|| format!("Main item not found in \"{anchor}\""))?;
     let item_ident = maybe_ident_for_item(item).context("Expected the main item to have an ident")?;
     Ok(item_ident)
 }

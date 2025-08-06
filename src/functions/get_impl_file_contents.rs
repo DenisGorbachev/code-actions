@@ -134,7 +134,7 @@ fn get_stem_parts_from_ref_expr_lit(expr_lit: &ExprLit) -> StemPartIterBox {
 }
 
 pub fn get_impl_token_stream(anchor: &Utf8Path, trait_path: Path) -> Outcome<TokenStream> {
-    let item = parse_main_item_from_path(anchor)?.with_context(|| format!("Main item not found in \"{}\"", anchor))?;
+    let item = parse_main_item_from_path(anchor)?.with_context(|| format!("Main item not found in \"{anchor}\""))?;
     let item_ident = maybe_ref_ident_for_ref_item(&item).context("Expected the main item to have an ident")?;
     let use_tree_root = UseTree::Name(UseName {
         ident: item_ident.to_owned(),

@@ -89,7 +89,7 @@ mod tests {
         let path = get_relative_path_anchor_label_rs(anchor.as_ref(), label.as_ref())?;
         create_file_all(path.as_path())?;
         let result = create_module_file_from_anchor_label(anchor.as_ref(), label.as_ref(), RegularStruct);
-        assert_matches!(result, Err(ref err) if format!("{:?}", err).contains("already exists"));
+        assert_matches!(result, Err(ref err) if format!("{err:?}").contains("already exists"));
         Ok(())
     }
 

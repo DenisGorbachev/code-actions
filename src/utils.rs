@@ -8,7 +8,7 @@ pub fn get_freewrite_file_stem(now: OffsetDateTime) -> Result<String, Format> {
 
 pub fn get_freewrite_file_name(now: OffsetDateTime, extension: &str) -> Result<String, Format> {
     let stem = get_freewrite_file_stem(now)?;
-    Ok(format!("{}.{}", stem, extension))
+    Ok(format!("{stem}.{extension}"))
 }
 
 pub fn get_freewrite_file_content(now: OffsetDateTime) -> Result<String, Format> {

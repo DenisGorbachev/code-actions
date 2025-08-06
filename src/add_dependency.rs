@@ -105,7 +105,7 @@ pub fn bool_to_opt(value: bool) -> Option<bool> {
 
 pub fn add_local_dependency_for_package_from_name(anchor: &Utf8Path, crate_name: &str) -> Outcome {
     let (mut package_manifest, _workspace_manifest_opt) = PackageInfo::try_from(anchor)?.dissolve();
-    let path = format!("../{}", crate_name);
+    let path = format!("../{crate_name}");
     let package_crate_spec = DependencyBuilder::default().path(path).build()?.into();
     add_dependency(&mut package_manifest, crate_name, package_crate_spec)?;
     Ok(())

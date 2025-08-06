@@ -164,7 +164,7 @@ impl Cli {
                         let suffix = suffix.unwrap_or_default();
                         let path = Utf8Path::new(camino::Utf8Path::new(&parent));
                         let filename = get_relative_path_anchor_subdir_name_suffix(path, &subdir, &stem, &suffix)?;
-                        println!("{}", filename);
+                        println!("{filename}");
                         Ok(())
                     }
                     FreewritePath {
@@ -172,7 +172,7 @@ impl Cli {
                     } => {
                         let now = OffsetDateTime::now_utc();
                         let freewrite_path = get_freewrite_path_from_anchor(now, anchor.as_ref())?;
-                        println!("{}", freewrite_path);
+                        println!("{freewrite_path}");
                         Ok(())
                     }
                 }

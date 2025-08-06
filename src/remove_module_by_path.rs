@@ -10,7 +10,7 @@ pub fn remove_module_by_path(path: &Utf8Path) -> Outcome {
     let file_stem = path.file_stem().context("Failed to get file stem")?;
 
     // Remove the module file
-    fs::remove_file(path).with_context(|| format!("Failed to remove module file: {}", path))?;
+    fs::remove_file(path).with_context(|| format!("Failed to remove module file: {path}"))?;
 
     // Get the parent directory of the module file
     let parent_dir = path
@@ -43,7 +43,7 @@ fn find_parent_module_file(parent_dir: &Utf8Path) -> Outcome<Utf8PathBuf> {
 }
 
 fn remove_mod_line_from_parent(parent_module_file: &Utf8Path, file_stem: &str) -> Outcome {
-    let file = fs::File::open(parent_module_file).with_context(|| format!("Failed to open parent module file: {}", parent_module_file))?;
+    let file = fs::File::open(parent_module_file).with_context(|| format!("Failed to open parent module file: {parent_module_file}"))?;
     let reader = io::BufReader::new(file);
     let mut lines: Vec<String> = Vec::new();
 
@@ -54,9 +54,9 @@ fn remove_mod_line_from_parent(parent_module_file: &Utf8Path, file_stem: &str) -
         }
     }
 
-    let mut file = fs::File::create(parent_module_file).with_context(|| format!("Failed to write to parent module file: {}", parent_module_file))?;
+    let mut file = fs::File::create(parent_module_file).with_context(|| format!("Failed to write to parent module file: {parent_module_file}"))?;
     for line in lines {
-        writeln!(file, "{}", line)?;
+        writeln!(file, "{line}")?;
     }
 
     Ok(())
