@@ -17,7 +17,7 @@ pub fn get_regular_enum_token_stream(name: Ident) -> TokenStream {
 pub fn get_plain_enum_token_stream(name: Ident) -> TokenStream {
     quote! {
         use strum::Display;
-        #[allow(dead_code)]
+        #[allow(unused_imports)]
         use #name::*;
 
         #[derive(Display, Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Copy, Debug)]
