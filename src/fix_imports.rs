@@ -66,7 +66,7 @@ pub fn fix_rust_file(path: &Path, yes: bool) -> Outcome {
     Ok(())
 }
 
-pub fn fix_regular_file(content: &str) -> Cow<str> {
+pub fn fix_regular_file(content: &str) -> Cow<'_, str> {
     let re = Regex::new(r"use crate::((?:\w+::)*)").unwrap();
     re.replace_all(content, "use crate::")
 }

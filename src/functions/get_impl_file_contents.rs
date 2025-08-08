@@ -59,7 +59,7 @@ fn get_stem_from_trait_path(trait_path: &Path) -> String {
     full_iter.join("_")
 }
 
-pub fn get_stem_parts_from_ref_path_segment(path_segment: &PathSegment) -> StemPartIterBox {
+pub fn get_stem_parts_from_ref_path_segment(path_segment: &PathSegment) -> StemPartIterBox<'_> {
     let ident_stem_part = path_segment.ident.to_string().to_snake_case();
     let iter = once(ident_stem_part).chain(get_stem_parts_from_ref_path_arguments(&path_segment.arguments));
     Box::new(iter)
@@ -69,7 +69,7 @@ pub type StemPartIterBox<'a> = Box<dyn Iterator<Item = StemPart> + 'a>;
 
 pub type StemPart = String;
 
-pub fn get_stem_parts_from_ref_path_arguments(path_arguments: &PathArguments) -> StemPartIterBox {
+pub fn get_stem_parts_from_ref_path_arguments(path_arguments: &PathArguments) -> StemPartIterBox<'_> {
     match path_arguments {
         PathArguments::None => Box::new(empty()),
         PathArguments::AngleBracketed(angle_bracketed_generic_arguments) => get_stem_parts_from_ref_angle_bracketed_generic_arguments(angle_bracketed_generic_arguments),
@@ -77,7 +77,7 @@ pub fn get_stem_parts_from_ref_path_arguments(path_arguments: &PathArguments) ->
     }
 }
 
-fn get_stem_parts_from_ref_angle_bracketed_generic_arguments(angle_bracketed_generic_arguments: &AngleBracketedGenericArguments) -> StemPartIterBox {
+fn get_stem_parts_from_ref_angle_bracketed_generic_arguments(angle_bracketed_generic_arguments: &AngleBracketedGenericArguments) -> StemPartIterBox<'_> {
     let iter = angle_bracketed_generic_arguments
         .args
         .iter()
@@ -85,7 +85,7 @@ fn get_stem_parts_from_ref_angle_bracketed_generic_arguments(angle_bracketed_gen
     Box::new(iter)
 }
 
-fn get_stem_parts_from_ref_generic_argument(generic_argument: &GenericArgument) -> StemPartIterBox {
+fn get_stem_parts_from_ref_generic_argument(generic_argument: &GenericArgument) -> StemPartIterBox<'_> {
     match generic_argument {
         GenericArgument::Lifetime(_) => Box::new(empty()),
         GenericArgument::Type(ty) => get_stem_parts_from_ref_type(ty),
@@ -97,7 +97,7 @@ fn get_stem_parts_from_ref_generic_argument(generic_argument: &GenericArgument) 
     }
 }
 
-fn get_stem_parts_from_ref_type(ty: &Type) -> StemPartIterBox {
+fn get_stem_parts_from_ref_type(ty: &Type) -> StemPartIterBox<'_> {
     match &ty {
         Type::Path(path) => Box::new(get_stem_parts_from_ref_type_path(path)),
         Type::Reference(reference) => get_stem_parts_from_ref_type(&reference.elem),
@@ -115,14 +115,14 @@ fn get_stem_parts_from_ref_path(path: &Path) -> impl Iterator<Item = StemPart> +
         .flat_map(get_stem_parts_from_ref_path_segment)
 }
 
-fn get_stem_parts_from_ref_expr(expr: &Expr) -> StemPartIterBox {
+fn get_stem_parts_from_ref_expr(expr: &Expr) -> StemPartIterBox<'_> {
     match expr {
         Expr::Lit(lit) => get_stem_parts_from_ref_expr_lit(lit),
         _ => todo!(),
     }
 }
 
-fn get_stem_parts_from_ref_expr_lit(expr_lit: &ExprLit) -> StemPartIterBox {
+fn get_stem_parts_from_ref_expr_lit(expr_lit: &ExprLit) -> StemPartIterBox<'_> {
     match &expr_lit.lit {
         Lit::Str(str) => Box::new(once(str.value())),
         Lit::Char(char) => Box::new(once(char.value().to_string())),
@@ -203,7 +203,11 @@ pub fn get_self_ty_from_ident_and_generics(ident: Ident, generics: Generics) -> 
         .map(into_generic_argument_for_generic_param)
         .collect();
     let angle_bracketed_generic_arguments = generic_arguments.get::<AngleBracketedGenericArguments>();
-    let arguments = if angle_bracketed_generic_arguments.args.is_empty() { PathArguments::None } else { PathArguments::AngleBracketed(angle_bracketed_generic_arguments) };
+    let arguments = if angle_bracketed_generic_arguments.args.is_empty() {
+        PathArguments::None
+    } else {
+        PathArguments::AngleBracketed(angle_bracketed_generic_arguments)
+    };
     let segment = PathSegment {
         ident,
         arguments,
