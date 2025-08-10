@@ -6,7 +6,10 @@ use figment::{
 use fmt_derive::Display;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, path::Path};
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
+};
 
 /// Configuration for code actions with extra derives and use statements
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
@@ -84,9 +87,9 @@ impl CodeActionsConfig {
     /// let derives = config.get_extra_derives_for_name("UserError");
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn load_from_anchor<P: AsRef<Path>>(anchor_path: P) -> Result<Self, LoadConfigError> {
-        let anchor_path = anchor_path.as_ref();
-        let start_path = if anchor_path.is_file() { anchor_path.parent().unwrap_or(anchor_path) } else { anchor_path };
+    pub fn load_from_anchor(anchor_path: impl Into<PathBuf>) -> Result<Self, LoadConfigError> {
+        let anchor_path = anchor_path.into();
+        let start_path = if anchor_path.is_file() { anchor_path.parent().unwrap_or(&anchor_path) } else { &anchor_path };
 
         let config_paths = Self::collect_config_paths(start_path);
         let mut figment = Figment::new();
