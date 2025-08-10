@@ -1,4 +1,3 @@
-use camino::Utf8PathBuf;
 use figment::{
     providers::{Env, Format, Toml},
     Figment,
@@ -10,7 +9,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::errors::{ConfigCompileRegexPatternsError, ConfigLoadFromAnchorError, ConfigLoadFromAnchorErrorReason, ConfigMatchesEmptyError};
+use crate::errors::{ConfigCompileRegexPatternsError, ConfigLoadFromAnchorError, ConfigMatchesEmptyError};
 
 /// Configuration for code actions
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
@@ -59,15 +58,10 @@ impl Config {
     /// ```
     pub fn load_from_anchor(anchor_path: impl Into<PathBuf>) -> Result<Self, ConfigLoadFromAnchorError> {
         let anchor_path = anchor_path.into();
-        let anchor_path_utf8 = Utf8PathBuf::try_from(anchor_path).map_err(|_| ConfigLoadFromAnchorError::new(Utf8PathBuf::new(), ConfigLoadFromAnchorErrorReason::FigmentExtract(Box::new(figment::Error::from("Invalid UTF-8 path".to_string())))))?;
 
-        let start_path = if anchor_path_utf8.is_file() {
-            anchor_path_utf8.parent().unwrap_or(&anchor_path_utf8)
-        } else {
-            &anchor_path_utf8
-        };
+        let start_path = if anchor_path.is_file() { anchor_path.parent().unwrap_or(&anchor_path) } else { &anchor_path };
 
-        let config_paths = Self::collect_config_paths(start_path.as_std_path());
+        let config_paths = Self::collect_config_paths(start_path);
         let mut figment = Figment::new();
 
         for config_path in config_paths.into_iter().rev() {
@@ -77,20 +71,20 @@ impl Config {
         figment = figment.admerge(Env::prefixed("CODE_ACTIONS_"));
         let mut config: Config = figment
             .extract()
-            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path_utf8.clone(), e.into()))?;
+            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path.clone(), e.into()))?;
 
         // Validate configuration before compiling regex
         config
             .validate()
-            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path_utf8.clone(), e.into()))?;
+            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path.clone(), e.into()))?;
         config
             .compile_regex_patterns()
-            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path_utf8, e.into()))?;
+            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path, e.into()))?;
 
         Ok(config)
     }
 
-    fn collect_config_paths(start_path: &Path) -> Vec<std::path::PathBuf> {
+    fn collect_config_paths(start_path: &Path) -> Vec<PathBuf> {
         let mut config_paths = Vec::new();
         let mut current_path = start_path;
 

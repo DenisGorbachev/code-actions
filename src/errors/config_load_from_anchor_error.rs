@@ -1,14 +1,14 @@
-use camino::Utf8PathBuf;
 use derive_more::{Error, From};
 use derive_new::new;
 use fmt_derive::Display;
+use std::path::PathBuf;
 
 use super::{ConfigCompileRegexPatternsError, ConfigMatchesEmptyError};
 
 #[derive(new, Error, Display, From, Clone, Debug)]
 pub struct ConfigLoadFromAnchorError {
     #[error(not(source))]
-    pub anchor_path: Utf8PathBuf,
+    pub anchor_path: PathBuf,
     pub reason: ConfigLoadFromAnchorErrorReason,
 }
 
