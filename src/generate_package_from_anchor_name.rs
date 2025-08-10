@@ -27,7 +27,7 @@ pub fn generate_package_from_anchor_name(anchor: &Utf8Path, name: &str, args: &[
     }
     default_modules
         .iter()
-        .map(|module| generate_module_with_dir_from_parent_dir_and_stem(new_package_root_path, module))
+        .map(|module| generate_module_with_dir_from_parent_dir_and_stem(new_package_root_path, *module))
         .collect::<Result<Vec<_>, _>>()?;
     Ok(())
 }

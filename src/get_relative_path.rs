@@ -8,24 +8,29 @@ use crate::extensions::camino::utf8_path_buf::Utf8PathBuf;
 use crate::extensions::std::string::ensure_suffix;
 use crate::types::label::LabelSlice;
 
-pub fn get_relative_path_anchor_filename(anchor: &Utf8Path, filename: &str) -> Outcome<Utf8PathBuf> {
+pub fn get_relative_path_anchor_filename(anchor: &Utf8Path, filename: impl Into<String>) -> Outcome<Utf8PathBuf> {
+    let filename = filename.into();
     let dir = get_dir_from_anchor(anchor)?;
     let new_path = dir.join(filename);
     Ok(new_path)
 }
 
-pub fn get_relative_path_anchor_subdir_filename(anchor: &Utf8Path, subdir: &str, filename: &str) -> Outcome<Utf8PathBuf> {
+pub fn get_relative_path_anchor_subdir_filename(anchor: &Utf8Path, subdir: impl Into<String>, filename: impl Into<String>) -> Outcome<Utf8PathBuf> {
+    let subdir = subdir.into();
+    let filename = filename.into();
     let dir = get_dir_from_anchor(anchor)?;
     let new_path = dir.join(subdir).join(filename);
     Ok(new_path)
 }
 
-pub fn get_relative_path_anchor_stem_extension(anchor: &Utf8Path, stem: &str, extension: &str) -> Outcome<Utf8PathBuf> {
+pub fn get_relative_path_anchor_stem_extension(anchor: &Utf8Path, stem: impl Into<String>, extension: impl Into<String>) -> Outcome<Utf8PathBuf> {
+    let stem = stem.into();
+    let extension = extension.into();
     let filename = format!("{stem}.{extension}");
-    get_relative_path_anchor_filename(anchor, &filename)
+    get_relative_path_anchor_filename(anchor, filename)
 }
 
-pub fn get_relative_path_anchor_stem_rs(anchor: &Utf8Path, stem: &str) -> Outcome<Utf8PathBuf> {
+pub fn get_relative_path_anchor_stem_rs(anchor: &Utf8Path, stem: impl Into<String>) -> Outcome<Utf8PathBuf> {
     get_relative_path_anchor_stem_extension(anchor, stem, "rs")
 }
 
@@ -34,24 +39,26 @@ pub fn get_relative_path_anchor_label_rs(anchor: &Utf8Path, label: &LabelSlice) 
     get_relative_path_anchor_stem_extension(anchor, &stem, "rs")
 }
 
-pub fn get_relative_path_anchor_subdir_stem_rs(anchor: &Utf8Path, subdir: &str, stem: &str) -> Outcome<Utf8PathBuf> {
+pub fn get_relative_path_anchor_subdir_stem_rs(anchor: &Utf8Path, subdir: impl Into<String>, stem: impl Into<String>) -> Outcome<Utf8PathBuf> {
+    let stem = stem.into();
     let filename = format!("{stem}.rs");
-    get_relative_path_anchor_subdir_filename(anchor, subdir, &filename)
+    get_relative_path_anchor_subdir_filename(anchor, subdir, filename)
 }
 
-pub fn get_relative_path_anchor_subdir_label_rs(anchor: &Utf8Path, subdir: &str, label: &LabelSlice) -> Outcome<Utf8PathBuf> {
+pub fn get_relative_path_anchor_subdir_label_rs(anchor: &Utf8Path, subdir: impl Into<String>, label: &LabelSlice) -> Outcome<Utf8PathBuf> {
     let filename = format!("{}.rs", label.to_snake_case());
-    get_relative_path_anchor_subdir_filename(anchor, subdir, &filename)
+    get_relative_path_anchor_subdir_filename(anchor, subdir, filename)
 }
 
-pub fn get_relative_path_anchor_subdir_label(anchor: &Utf8Path, subdir: &str, label: &str) -> Outcome<Utf8PathBuf> {
+pub fn get_relative_path_anchor_subdir_label(anchor: &Utf8Path, subdir: impl Into<String>, label: impl Into<String>) -> Outcome<Utf8PathBuf> {
+    let label = label.into();
     let stem = label.to_snake_case();
-    get_relative_path_anchor_subdir_stem_rs(anchor, subdir, &stem)
+    get_relative_path_anchor_subdir_stem_rs(anchor, subdir, stem)
 }
 
-pub fn get_relative_path_anchor_subdir_name_suffix(anchor: &Utf8Path, subdir: &str, name: &str, suffix: &str) -> Outcome<Utf8PathBuf> {
+pub fn get_relative_path_anchor_subdir_name_suffix(anchor: &Utf8Path, subdir: impl Into<String>, name: impl Into<String>, suffix: impl Into<String>) -> Outcome<Utf8PathBuf> {
     let name = ensure_suffix(name, suffix);
-    get_relative_path_anchor_subdir_label(anchor, subdir, &name)
+    get_relative_path_anchor_subdir_label(anchor, subdir, name)
 }
 
 pub fn get_dir_from_anchor(anchor: &Utf8Path) -> Outcome<Utf8PathBuf> {

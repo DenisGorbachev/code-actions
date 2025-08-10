@@ -9,17 +9,17 @@ use crate::generate_file::generate_module_file;
 use crate::get_relative_path::{get_relative_path_anchor_stem_rs, get_relative_path_anchor_subdir_label_rs, get_relative_path_anchor_subdir_name_suffix};
 use crate::types::label::LabelSlice;
 
-pub fn generate_module_from_anchor_subdir_name_suffix(anchor: &Utf8Path, subdir: &str, name: &str, suffix: &str) -> Outcome<File> {
+pub fn generate_module_from_anchor_subdir_name_suffix(anchor: &Utf8Path, subdir: impl Into<String>, name: impl Into<String>, suffix: impl Into<String>) -> Outcome<File> {
     let path = get_relative_path_anchor_subdir_name_suffix(anchor, subdir, name, suffix)?;
     generate_module_from_path(path)
 }
 
-pub fn generate_module_from_anchor_subdir_label(anchor: &Utf8Path, subdir: &str, label: &LabelSlice) -> Outcome<File> {
+pub fn generate_module_from_anchor_subdir_label(anchor: &Utf8Path, subdir: impl Into<String>, label: &LabelSlice) -> Outcome<File> {
     let path = get_relative_path_anchor_subdir_label_rs(anchor, subdir, label)?;
     generate_module_from_path(path)
 }
 
-pub fn generate_module_from_anchor_stem(anchor: &Utf8Path, stem: &str) -> Outcome<File> {
+pub fn generate_module_from_anchor_stem(anchor: &Utf8Path, stem: impl Into<String>) -> Outcome<File> {
     let path = get_relative_path_anchor_stem_rs(anchor, stem)?;
     generate_module_from_path(path)
 }
@@ -28,10 +28,11 @@ pub fn generate_module_from_path(path: impl AsRef<Utf8Path>) -> Outcome<File> {
     generate_module_file(path, get_module_file_contents)
 }
 
-pub fn generate_module_with_dir_from_parent_dir_and_stem(parent_dir: impl AsRef<Utf8Path>, stem: &str) -> Outcome {
+pub fn generate_module_with_dir_from_parent_dir_and_stem(parent_dir: impl AsRef<Utf8Path>, stem: impl Into<String>) -> Outcome {
     let parent_dir = parent_dir.as_ref();
+    let stem = stem.into();
     let filename = format!("{stem}.rs");
-    let dirname = stem;
+    let dirname = &stem;
     let dir = parent_dir.join(dirname);
     let file = parent_dir.join(filename);
     create_dir(dir)?;

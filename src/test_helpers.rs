@@ -47,7 +47,8 @@ pub fn get_lib_rs_path(root: &impl AsRef<Path>) -> PathBuf {
     get_src_path(root).join(LIB)
 }
 
-fn create_workspace_cargo_toml(path: impl AsRef<Path>, members: Vec<String>) -> Outcome<File> {
+fn create_workspace_cargo_toml(path: impl AsRef<Path>, members: impl Into<Vec<String>>) -> Outcome<File> {
+    let members = members.into();
     let workspace = Workspace {
         members,
         resolver: Some(Resolver::V2),
@@ -63,7 +64,8 @@ fn create_workspace_cargo_toml(path: impl AsRef<Path>, members: Vec<String>) -> 
     Ok(file)
 }
 
-fn create_package_cargo_toml(path: impl AsRef<Path>, name: String) -> Outcome<File> {
+fn create_package_cargo_toml(path: impl AsRef<Path>, name: impl Into<String>) -> Outcome<File> {
+    let name = name.into();
     let mut package = Package::default();
     package.name = name;
     package.version = Inheritable::Set("0.1.0".into());

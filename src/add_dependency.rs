@@ -12,33 +12,33 @@ use crate::types::dependency::DependencyBuilder;
 use crate::types::package_info::PackageInfo;
 use crate::types::toml_file::TomlFile;
 
-pub fn add_dependency(file: &mut TomlFile, crate_name: &str, crate_spec: InlineTable) -> Outcome {
+pub fn add_dependency(file: &mut TomlFile, crate_name: impl AsRef<str>, crate_spec: InlineTable) -> Outcome {
     file.modify(|doc| {
         let dependencies = doc.package_dependencies_mut();
-        insert_if_not_contains(dependencies, crate_name, Item::Value(Value::InlineTable(crate_spec)));
+        insert_if_not_contains(dependencies, crate_name.as_ref(), Item::Value(Value::InlineTable(crate_spec)));
     })
     .map_err(From::from)
 }
 
-pub fn add_workspace_dependency(file: &mut TomlFile, crate_name: &str, crate_spec: InlineTable) -> Outcome {
+pub fn add_workspace_dependency(file: &mut TomlFile, crate_name: impl AsRef<str>, crate_spec: InlineTable) -> Outcome {
     file.modify(|doc| {
         let workspace_dependencies = doc.workspace_dependencies_mut();
-        insert_if_not_contains(workspace_dependencies, crate_name, Item::Value(Value::InlineTable(crate_spec)));
+        insert_if_not_contains(workspace_dependencies, crate_name.as_ref(), Item::Value(Value::InlineTable(crate_spec)));
     })
     .map_err(From::from)
 }
 
-pub fn remove_package_dependency(file: &mut TomlFile, crate_name: &str) -> Outcome {
+pub fn remove_package_dependency(file: &mut TomlFile, crate_name: impl AsRef<str>) -> Outcome {
     file.modify(|doc| {
         let dependencies = doc.package_dependencies_mut();
-        dependencies.remove(crate_name);
+        dependencies.remove(crate_name.as_ref());
     })
     .map_err(From::from)
 }
 
-pub fn local_package_root(anchor: &Utf8Path, crate_name: &str) -> Outcome<Utf8PathBuf> {
+pub fn local_package_root(anchor: &Utf8Path, crate_name: impl AsRef<str>) -> Outcome<Utf8PathBuf> {
     let current_package_root = anchor.get_package_root()?;
-    let local_package_root = current_package_root.join("..").join(crate_name);
+    let local_package_root = current_package_root.join("..").join(crate_name.as_ref());
     Ok(local_package_root)
 }
 
@@ -67,7 +67,9 @@ pub fn add_global_dependency_from_version(anchor: &Utf8Path, crate_name_version:
     add_global_dependency_from_crate_name_crate_version(anchor, &crate_name, crate_version, optional)
 }
 
-pub fn add_global_dependency_from_crate_name_crate_version(anchor: &Utf8Path, crate_name: &str, crate_version: String, optional: bool) -> Outcome {
+pub fn add_global_dependency_from_crate_name_crate_version(anchor: &Utf8Path, crate_name: impl AsRef<str>, crate_version: impl Into<String>, optional: bool) -> Outcome {
+    let crate_name = crate_name.as_ref();
+    let crate_version = crate_version.into();
     let (mut package_manifest, workspace_manifest_opt) = PackageInfo::try_from(anchor)?.dissolve();
     match workspace_manifest_opt {
         None => {
@@ -103,15 +105,16 @@ pub fn bool_to_opt(value: bool) -> Option<bool> {
     }
 }
 
-pub fn add_local_dependency_for_package_from_name(anchor: &Utf8Path, crate_name: &str) -> Outcome {
+pub fn add_local_dependency_for_package_from_name(anchor: &Utf8Path, crate_name: impl AsRef<str>) -> Outcome {
+    let crate_name_str = crate_name.as_ref();
     let (mut package_manifest, _workspace_manifest_opt) = PackageInfo::try_from(anchor)?.dissolve();
-    let path = format!("../{crate_name}");
+    let path = format!("../{crate_name_str}");
     let package_crate_spec = DependencyBuilder::default().path(path).build()?.into();
-    add_dependency(&mut package_manifest, crate_name, package_crate_spec)?;
+    add_dependency(&mut package_manifest, crate_name_str, package_crate_spec)?;
     Ok(())
 }
 
-pub fn remove_workspace_and_package_dependency(anchor: &Utf8Path, crate_name: &str) -> Outcome {
+pub fn remove_workspace_and_package_dependency(anchor: &Utf8Path, crate_name: impl AsRef<str>) -> Outcome {
     let (mut package_manifest, _workspace_manifest_opt) = PackageInfo::try_from(anchor)?.dissolve();
     remove_package_dependency(&mut package_manifest, crate_name)?;
     // TODO: remove workspace dependency if not used in other packages

@@ -31,7 +31,7 @@ pub fn get_module_file_from_label(label: &str, module_template: ModuleTemplate) 
 }
 
 pub fn create_module_file_from_anchor_label(anchor: &Utf8Path, label: &str, module_template: ModuleTemplate) -> Outcome<File> {
-    let path = get_relative_path_anchor_stem_rs(anchor, &to_stem(label))?;
+    let path = get_relative_path_anchor_stem_rs(anchor, to_stem(label))?;
     let manifest_path_buf = path.as_path().get_package_or_workspace_manifest()?;
 
     // Try to load config, use default if not found
