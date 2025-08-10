@@ -1,9 +1,14 @@
-[extra_derives]
-"*Error" = ["Serialize", "Deserialize"]
-"User*" = ["Copy"]
-"*" = ["PartialEq"]
+[[extra]]
+matches = ".*Error$"
+derive = ["Serialize", "Deserialize"]
+use = ["serde::{Serialize, Deserialize}"]
 
-[extra_use_statements]
-"*Error" = ["serde::{Serialize, Deserialize}"]
-"User*" = ["std::fmt"]
-"*" = ["std::collections::HashMap"]
+[[extra]]
+matches = "User.*"
+derive = ["Copy"]
+use = ["std::fmt"]
+
+[[extra]]
+matches = ".*"
+derive = ["PartialEq"]
+use = ["std::collections::HashMap"]
