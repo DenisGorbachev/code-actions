@@ -1,14 +1,14 @@
-use crate::types::config::CodeActionsConfig;
+use crate::types::config::Config;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
 pub fn get_regular_enum_token_stream(name: Ident) -> TokenStream {
-    let config = CodeActionsConfig::default();
+    let config = Config::default();
     let type_name = name.to_string();
     get_regular_enum_token_stream_with_config(name, &config, &type_name)
 }
 
-pub fn get_regular_enum_token_stream_with_config(name: Ident, config: &CodeActionsConfig, type_name: &str) -> TokenStream {
+pub fn get_regular_enum_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
     let base_derives = &[
         "From",
         "Ord",
@@ -41,12 +41,12 @@ pub fn get_regular_enum_token_stream_with_config(name: Ident, config: &CodeActio
 /// Plain enums are those enums that contain only constant variants without arguments
 /// The use statement ("use #name::*") is useful for functions that match on enum variants
 pub fn get_plain_enum_token_stream(name: Ident) -> TokenStream {
-    let config = CodeActionsConfig::default();
+    let config = Config::default();
     let type_name = name.to_string();
     get_plain_enum_token_stream_with_config(name, &config, &type_name)
 }
 
-pub fn get_plain_enum_token_stream_with_config(name: Ident, config: &CodeActionsConfig, type_name: &str) -> TokenStream {
+pub fn get_plain_enum_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
     let base_derives = &[
         "Display",
         "Ord",
@@ -79,12 +79,12 @@ pub fn get_plain_enum_token_stream_with_config(name: Ident, config: &CodeActions
 }
 
 pub fn get_clap_enum_token_stream(name: Ident) -> TokenStream {
-    let config = CodeActionsConfig::default();
+    let config = Config::default();
     let type_name = name.to_string();
     get_clap_enum_token_stream_with_config(name, &config, &type_name)
 }
 
-pub fn get_clap_enum_token_stream_with_config(name: Ident, config: &CodeActionsConfig, type_name: &str) -> TokenStream {
+pub fn get_clap_enum_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
     let base_derives = &["Parser", "Clone", "Debug"];
     let extra_derives = config.get_extra_derives_for_name(type_name);
     let all_derives = merge_derives(base_derives, &extra_derives);

@@ -12,9 +12,9 @@ use std::{
 
 use crate::errors::{ConfigCompileRegexPatternsError, ConfigLoadFromAnchorError, ConfigLoadFromAnchorErrorReason, ConfigMatchesEmptyError};
 
-/// Configuration for code actions with extra derives and use statements
+/// Configuration for code actions
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
-pub struct CodeActionsConfig {
+pub struct Config {
     /// List of extra configuration rules for matching types
     pub extra: Vec<ExtraConfig>,
 }
@@ -35,7 +35,7 @@ pub struct ExtraConfig {
     regex: Option<Regex>,
 }
 
-impl CodeActionsConfig {
+impl Config {
     /// Load configuration from anchor path, walking up to workspace root
     ///
     /// This method searches for `code-actions.toml` files from the anchor path
@@ -51,9 +51,9 @@ impl CodeActionsConfig {
     ///
     /// # Example
     /// ```no_run
-    /// use code_actions::types::config::CodeActionsConfig;
+    /// use code_actions::types::config::Config;
     ///
-    /// let config = CodeActionsConfig::load_from_anchor("./src/lib.rs")?;
+    /// let config = Config::load_from_anchor("./src/lib.rs")?;
     /// let derives = config.get_extra_derives_for_name("UserError");
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
@@ -75,7 +75,7 @@ impl CodeActionsConfig {
         }
 
         figment = figment.admerge(Env::prefixed("CODE_ACTIONS_"));
-        let mut config: CodeActionsConfig = figment
+        let mut config: Config = figment
             .extract()
             .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path_utf8.clone(), e.into()))?;
 
@@ -238,7 +238,7 @@ use = ["std::fmt"]
         fs::write(nested_dir.join("code-actions.toml"), nested_config).unwrap();
 
         // Load config from nested directory
-        let config = CodeActionsConfig::load_from_anchor(&nested_dir).unwrap();
+        let config = Config::load_from_anchor(&nested_dir).unwrap();
 
         // Verify merged configuration - should have configurations from both files
         assert!(!config.extra.is_empty());
@@ -268,7 +268,7 @@ use = ["std::fmt"]
         use quote::format_ident;
 
         // Create a sample config
-        let config = CodeActionsConfig {
+        let config = Config {
             extra: vec![ExtraConfig {
                 matches: "UserStruct".to_string(),
                 derive: vec!["Serialize".to_string(), "Deserialize".to_string()],
@@ -292,7 +292,7 @@ use = ["std::fmt"]
 
     #[test]
     fn test_regex_matching() {
-        let mut config = CodeActionsConfig {
+        let mut config = Config {
             extra: vec![
                 ExtraConfig {
                     matches: "User.*".to_string(),

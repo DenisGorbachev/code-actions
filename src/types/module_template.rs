@@ -15,7 +15,7 @@ use crate::generate_type_alias::get_type_alias_token_stream;
 use crate::get_newtype_wrapper_struct_token_stream::get_newtype_wrapper_struct_token_stream;
 use crate::get_subtype_struct_token_stream::get_subtype_struct_token_stream;
 use crate::traits::to_module_token_stream::ToModuleTokenStream;
-use crate::types::config::CodeActionsConfig;
+use crate::types::config::Config;
 
 #[derive(ValueEnum, Default, Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Copy, Debug)]
 pub enum ModuleTemplate {
@@ -58,7 +58,7 @@ impl ModuleTemplate {
         }
     }
 
-    pub fn to_module_token_stream_with_config(&self, ident: Ident, config: &CodeActionsConfig) -> TokenStream {
+    pub fn to_module_token_stream_with_config(&self, ident: Ident, config: &Config) -> TokenStream {
         use crate::generate_enum::{get_clap_enum_token_stream_with_config, get_plain_enum_token_stream_with_config, get_regular_enum_token_stream_with_config};
         use crate::generate_error_enum::get_error_enum_token_stream_with_config;
         use crate::generate_error_struct::get_error_struct_token_stream_with_config;

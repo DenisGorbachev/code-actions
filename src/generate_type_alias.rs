@@ -1,4 +1,4 @@
-use crate::types::config::CodeActionsConfig;
+use crate::types::config::Config;
 use fs_err::File;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
@@ -31,12 +31,12 @@ pub fn get_type_alias_file_contents(path: &Utf8Path) -> Outcome<String> {
 }
 
 pub fn get_type_alias_token_stream(name: Ident) -> TokenStream {
-    let config = CodeActionsConfig::default();
+    let config = Config::default();
     let type_name = name.to_string();
     get_type_alias_token_stream_with_config(name, &config, &type_name)
 }
 
-pub fn get_type_alias_token_stream_with_config(name: Ident, config: &CodeActionsConfig, type_name: &str) -> TokenStream {
+pub fn get_type_alias_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
     let extra_uses = config.get_extra_use_statements_for_name(type_name);
     let extra_use_statements = create_use_statements(&extra_uses);
 
