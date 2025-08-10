@@ -159,12 +159,6 @@ impl CodeActionsConfig {
             if extra.matches.is_empty() {
                 return Err(ConfigMatchesEmptyError::new());
             }
-
-            // Check for potentially dangerous patterns
-            if extra.matches == ".*" && !extra.derive.is_empty() {
-                // Warn about overly broad patterns, but don't fail
-                tracing::warn!("Broad pattern '.*' will apply {:?} to all types", extra.derive);
-            }
         }
         Ok(())
     }
