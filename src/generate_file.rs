@@ -8,6 +8,7 @@ use crate::generate_modules::{append, create_dir_all_for_file, generate_modules,
 use crate::get_relative_path::get_relative_path_anchor_stem_rs;
 use crate::traits::cargo_info::CargoInfo;
 use crate::traits::to_module_token_stream::ToModuleTokenStream;
+use crate::types::config::CodeActionsConfig;
 use crate::types::module_template::ModuleTemplate;
 use crate::types::outcome::Outcome;
 use anyhow::ensure;
@@ -32,14 +33,22 @@ pub fn get_module_file_from_label(label: &str, module_template: ModuleTemplate) 
 pub fn create_module_file_from_anchor_label(anchor: &Utf8Path, label: &str, module_template: ModuleTemplate) -> Outcome<File> {
     let path = get_relative_path_anchor_stem_rs(anchor, &to_stem(label))?;
     let manifest_path_buf = path.as_path().get_package_or_workspace_manifest()?;
-    let token_stream = module_template.to_module_token_stream(to_ident(label));
+
+    // Try to load config, use default if not found
+    let config = CodeActionsConfig::load_from_anchor(anchor).unwrap_or_default();
+    let token_stream = module_template.to_module_token_stream_with_config(to_ident(label), &config);
+
     create_module_file_from_stream(path, manifest_path_buf, token_stream)
 }
 
 pub fn append_to_module_file_from_path(path: &Utf8Path, module_template: ModuleTemplate) -> Outcome<File> {
     let manifest_path_buf = path.get_package_or_workspace_manifest()?;
     let label = try_from_utf8_path(path)?;
-    let token_stream = module_template.to_module_token_stream(to_ident(&label));
+
+    // Try to load config, use default if not found
+    let config = CodeActionsConfig::load_from_anchor(path).unwrap_or_default();
+    let token_stream = module_template.to_module_token_stream_with_config(to_ident(&label), &config);
+
     append_to_module_file_from_stream(path, manifest_path_buf, token_stream)
 }
 

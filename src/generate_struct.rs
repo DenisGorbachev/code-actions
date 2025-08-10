@@ -6,24 +6,94 @@ use crate::types::outcome::Outcome;
 use crate::extensions::camino::utf8_path::Utf8Path;
 use crate::extensions::std::path::file_stem::FileStem;
 use crate::functions::format::format_token_stream_prettyplease;
+use crate::types::config::CodeActionsConfig;
 use crate::types::type_name::TypeName;
 
 pub fn get_struct_file_contents(path: &Utf8Path) -> Outcome<String> {
     let stem = FileStem::try_from(path)?;
     let type_name = TypeName::from(*stem);
     let name = format_ident!("{}", &type_name);
-    let content = get_regular_struct_token_stream(name);
+
+    // Try to load config, use default if not found
+    let config = CodeActionsConfig::load_from_anchor(path).unwrap_or_default();
+    let content = get_regular_struct_token_stream_with_config(name, &config, &type_name.to_string());
     Ok(format_token_stream_prettyplease(content)?)
+}
+
+fn merge_derives(base_derives: &[&str], extra_derives: &[String]) -> Vec<String> {
+    let mut all_derives: Vec<String> = base_derives.iter().map(|s| s.to_string()).collect();
+
+    for derive in extra_derives {
+        if !all_derives.contains(derive) {
+            all_derives.push(derive.clone());
+        }
+    }
+
+    all_derives
+}
+
+fn create_derive_attribute(derives: &[String]) -> TokenStream {
+    if derives.is_empty() {
+        return quote! {};
+    }
+
+    let derive_idents: Vec<_> = derives.iter().map(|d| format_ident!("{}", d)).collect();
+
+    quote! { #[derive(#(#derive_idents),*)] }
+}
+
+fn create_use_statements(use_statements: &[String]) -> TokenStream {
+    if use_statements.is_empty() {
+        return quote! {};
+    }
+
+    let mut tokens = TokenStream::new();
+    for use_stmt in use_statements {
+        let use_tokens = use_stmt
+            .parse::<TokenStream>()
+            .unwrap_or_else(|_| quote! { compile_error!(concat!("Invalid use statement: ", #use_stmt)); });
+        tokens.extend(quote! { use #use_tokens; });
+    }
+
+    tokens
 }
 
 /// `Ord, PartialOrd` is useful for generic structs
 pub fn get_regular_struct_token_stream(name: Ident) -> TokenStream {
+    let config = CodeActionsConfig::default();
+    let type_name = name.to_string();
+    get_regular_struct_token_stream_with_config(name, &config, &type_name)
+}
+
+pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &CodeActionsConfig, type_name: &str) -> TokenStream {
+    let base_derives = &[
+        "new",
+        "Getters",
+        "From",
+        "Into",
+        "Ord",
+        "PartialOrd",
+        "Eq",
+        "PartialEq",
+        "Default",
+        "Hash",
+        "Clone",
+        "Debug",
+    ];
+    let extra_derives = config.get_extra_derives_for_name(type_name);
+    let all_derives = merge_derives(base_derives, &extra_derives);
+    let derive_attr = create_derive_attribute(&all_derives);
+
+    let extra_uses = config.get_extra_use_statements_for_name(type_name);
+    let extra_use_statements = create_use_statements(&extra_uses);
+
     quote! {
         use derive_getters::Getters;
         use derive_more::{From, Into};
         use derive_new::new;
+        #extra_use_statements
 
-        #[derive(new, Getters, From, Into, Ord, PartialOrd, Eq, PartialEq, Default, Hash, Clone, Debug)]
+        #derive_attr
         pub struct #name {}
 
         impl #name {}
@@ -31,8 +101,34 @@ pub fn get_regular_struct_token_stream(name: Ident) -> TokenStream {
 }
 
 pub fn get_unit_struct_token_stream(name: Ident) -> TokenStream {
+    let config = CodeActionsConfig::default();
+    let type_name = name.to_string();
+    get_unit_struct_token_stream_with_config(name, &config, &type_name)
+}
+
+pub fn get_unit_struct_token_stream_with_config(name: Ident, config: &CodeActionsConfig, type_name: &str) -> TokenStream {
+    let base_derives = &[
+        "Default",
+        "Eq",
+        "PartialEq",
+        "Ord",
+        "PartialOrd",
+        "Hash",
+        "Clone",
+        "Copy",
+        "Debug",
+    ];
+    let extra_derives = config.get_extra_derives_for_name(type_name);
+    let all_derives = merge_derives(base_derives, &extra_derives);
+    let derive_attr = create_derive_attribute(&all_derives);
+
+    let extra_uses = config.get_extra_use_statements_for_name(type_name);
+    let extra_use_statements = create_use_statements(&extra_uses);
+
     quote! {
-        #[derive(Default, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, Debug)]
+        #extra_use_statements
+
+        #derive_attr
         pub struct #name;
     }
 }
@@ -43,11 +139,26 @@ pub fn get_sigil_struct_token_stream(name: Ident) -> TokenStream {
 }
 
 pub fn get_clap_struct_token_stream(name: Ident) -> TokenStream {
+    let config = CodeActionsConfig::default();
+    let type_name = name.to_string();
+    get_clap_struct_token_stream_with_config(name, &config, &type_name)
+}
+
+pub fn get_clap_struct_token_stream_with_config(name: Ident, config: &CodeActionsConfig, type_name: &str) -> TokenStream {
+    let base_derives = &["Parser", "Clone", "Debug"];
+    let extra_derives = config.get_extra_derives_for_name(type_name);
+    let all_derives = merge_derives(base_derives, &extra_derives);
+    let derive_attr = create_derive_attribute(&all_derives);
+
+    let extra_uses = config.get_extra_use_statements_for_name(type_name);
+    let extra_use_statements = create_use_statements(&extra_uses);
+
     quote! {
         use std::io::Write;
         use clap::Parser;
+        #extra_use_statements
 
-        #[derive(Parser, Clone, Debug)]
+        #derive_attr
         pub struct #name {}
 
         impl #name {

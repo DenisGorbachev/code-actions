@@ -1,3 +1,4 @@
+use crate::types::config::CodeActionsConfig;
 use crate::types::outcome::Outcome;
 use fs_err::File;
 use proc_macro2::{Ident, TokenStream};
@@ -29,10 +30,37 @@ pub fn get_fn_file_contents(path: &Utf8Path) -> Outcome<String> {
 }
 
 pub fn get_fn_token_stream(name: Ident) -> TokenStream {
-    let name = name.to_snake_case();
+    let config = CodeActionsConfig::default();
+    let type_name = name.to_string();
+    get_fn_token_stream_with_config(name, &config, &type_name)
+}
+
+pub fn get_fn_token_stream_with_config(name: Ident, config: &CodeActionsConfig, type_name: &str) -> TokenStream {
+    let snake_name = name.to_snake_case();
+    let extra_uses = config.get_extra_use_statements_for_name(type_name);
+    let extra_use_statements = create_use_statements(&extra_uses);
+
     quote! {
-        pub fn #name() {
+        #extra_use_statements
+
+        pub fn #snake_name() {
             todo!()
         }
     }
+}
+
+fn create_use_statements(use_statements: &[String]) -> TokenStream {
+    if use_statements.is_empty() {
+        return quote! {};
+    }
+
+    let mut tokens = TokenStream::new();
+    for use_stmt in use_statements {
+        let use_tokens = use_stmt
+            .parse::<TokenStream>()
+            .unwrap_or_else(|_| quote! { compile_error!(concat!("Invalid use statement: ", #use_stmt)); });
+        tokens.extend(quote! { use #use_tokens; });
+    }
+
+    tokens
 }

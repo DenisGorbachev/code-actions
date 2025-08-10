@@ -1,4 +1,5 @@
 pub mod anchor;
+pub mod config;
 pub mod crates_io_api_error;
 pub mod dependency;
 pub mod get_table_from_item_error;
