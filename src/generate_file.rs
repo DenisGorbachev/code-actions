@@ -35,7 +35,7 @@ pub fn create_module_file_from_anchor_label(anchor: &Utf8Path, label: &str, modu
     let manifest_path_buf = path.as_path().get_package_or_workspace_manifest()?;
 
     // Try to load config, use default if not found
-    let config = Config::load_from_anchor(anchor).unwrap_or_default();
+    let config = Config::try_from(anchor.as_std_path())?;
     let token_stream = module_template.to_module_token_stream_with_config(to_ident(label), &config);
 
     create_module_file_from_stream(path, manifest_path_buf, token_stream)
@@ -46,7 +46,7 @@ pub fn append_to_module_file_from_path(path: &Utf8Path, module_template: ModuleT
     let label = try_from_utf8_path(path)?;
 
     // Try to load config, use default if not found
-    let config = Config::load_from_anchor(path).unwrap_or_default();
+    let config = Config::try_from(path.as_std_path())?;
     let token_stream = module_template.to_module_token_stream_with_config(to_ident(&label), &config);
 
     append_to_module_file_from_stream(path, manifest_path_buf, token_stream)

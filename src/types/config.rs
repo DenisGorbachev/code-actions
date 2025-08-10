@@ -34,35 +34,19 @@ pub struct ExtraConfig {
     regex: Option<Regex>,
 }
 
-impl Config {
-    /// Load configuration from anchor path, walking up to workspace root
-    ///
-    /// This method searches for `code-actions.toml` files from the anchor path
-    /// up to the workspace root (directory containing `Cargo.toml`), merging
-    /// configurations using the `adjoin` strategy.
-    ///
-    /// # Arguments
-    /// * `anchor_path` - Starting path (file or directory) to begin search from
-    ///
-    /// # Returns
-    /// * `Ok(CodeActionsConfig)` - Merged configuration with compiled regex patterns
-    /// * `Err(CodeActionsConfigLoadFromAnchorError)` - If configuration loading or regex compilation fails
-    ///
-    /// # Example
-    /// ```no_run
-    /// use code_actions::types::config::Config;
-    ///
-    /// let config = Config::load_from_anchor("./src/lib.rs")?;
-    /// let derives = config.get_extra_derives_for_name("UserError");
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    pub fn load_from_anchor(anchor_path: impl Into<PathBuf>) -> Result<Self, ConfigLoadFromAnchorError> {
-        let anchor_path = anchor_path.into();
+impl TryFrom<&Path> for Config {
+    type Error = ConfigLoadFromAnchorError;
 
-        let start_path = if anchor_path.is_file() { anchor_path.parent().unwrap_or(&anchor_path) } else { &anchor_path };
+    fn try_from(anchor_path: &Path) -> Result<Self, Self::Error> {
+        let start_path = if anchor_path.is_file() { anchor_path.parent().unwrap_or(anchor_path) } else { anchor_path };
 
         let config_paths = Self::collect_config_paths(start_path);
         let mut figment = Figment::new();
+
+        // If no config files exist, return default
+        if config_paths.is_empty() {
+            return Ok(Config::default());
+        }
 
         for config_path in config_paths.into_iter().rev() {
             figment = figment.adjoin(Toml::file(&config_path));
@@ -71,19 +55,20 @@ impl Config {
         figment = figment.admerge(Env::prefixed("CODE_ACTIONS_"));
         let mut config: Config = figment
             .extract()
-            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path.clone(), e.into()))?;
+            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path.to_path_buf(), e.into()))?;
 
-        // Validate configuration before compiling regex
         config
             .validate()
-            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path.clone(), e.into()))?;
+            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path.to_path_buf(), e.into()))?;
         config
             .compile_regex_patterns()
-            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path, e.into()))?;
+            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path.to_path_buf(), e.into()))?;
 
         Ok(config)
     }
+}
 
+impl Config {
     fn collect_config_paths(start_path: &Path) -> Vec<PathBuf> {
         let mut config_paths = Vec::new();
         let mut current_path = start_path;
@@ -232,7 +217,7 @@ use = ["std::fmt"]
         fs::write(nested_dir.join("code-actions.toml"), nested_config).unwrap();
 
         // Load config from nested directory
-        let config = Config::load_from_anchor(&nested_dir).unwrap();
+        let config = Config::try_from(nested_dir.as_path()).unwrap();
 
         // Verify merged configuration - should have configurations from both files
         assert!(!config.extra.is_empty());

@@ -15,7 +15,7 @@ pub fn get_struct_file_contents(path: &Utf8Path) -> Outcome<String> {
     let name = format_ident!("{}", &type_name);
 
     // Try to load config, use default if not found
-    let config = Config::load_from_anchor(path).unwrap_or_default();
+    let config = Config::try_from(path.as_std_path())?;
     let content = get_regular_struct_token_stream_with_config(name, &config, &type_name.to_string());
     Ok(format_token_stream_prettyplease(content)?)
 }
