@@ -1,5 +1,6 @@
 pub mod add_dependency;
 pub mod constants;
+pub mod errors;
 pub mod experiment;
 pub mod extensions;
 pub mod functions;
