@@ -10,7 +10,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::errors::{CodeActionsConfigCompileRegexPatternsError, CodeActionsConfigLoadFromAnchorError, CodeActionsConfigLoadFromAnchorErrorReason, CodeActionsConfigValidateError};
+use crate::errors::{ConfigCompileRegexPatternsError, ConfigLoadFromAnchorError, ConfigLoadFromAnchorErrorReason, ConfigMatchesEmptyError};
 
 /// Configuration for code actions with extra derives and use statements
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
@@ -57,9 +57,9 @@ impl CodeActionsConfig {
     /// let derives = config.get_extra_derives_for_name("UserError");
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn load_from_anchor(anchor_path: impl Into<PathBuf>) -> Result<Self, CodeActionsConfigLoadFromAnchorError> {
+    pub fn load_from_anchor(anchor_path: impl Into<PathBuf>) -> Result<Self, ConfigLoadFromAnchorError> {
         let anchor_path = anchor_path.into();
-        let anchor_path_utf8 = Utf8PathBuf::try_from(anchor_path).map_err(|_| CodeActionsConfigLoadFromAnchorError::new(Utf8PathBuf::new(), CodeActionsConfigLoadFromAnchorErrorReason::FigmentExtract(Box::new(figment::Error::from("Invalid UTF-8 path".to_string())))))?;
+        let anchor_path_utf8 = Utf8PathBuf::try_from(anchor_path).map_err(|_| ConfigLoadFromAnchorError::new(Utf8PathBuf::new(), ConfigLoadFromAnchorErrorReason::FigmentExtract(Box::new(figment::Error::from("Invalid UTF-8 path".to_string())))))?;
 
         let start_path = if anchor_path_utf8.is_file() {
             anchor_path_utf8.parent().unwrap_or(&anchor_path_utf8)
@@ -74,18 +74,18 @@ impl CodeActionsConfig {
             figment = figment.adjoin(Toml::file(&config_path));
         }
 
-        figment = figment.adjoin(Env::prefixed("CODE_ACTIONS_"));
+        figment = figment.admerge(Env::prefixed("CODE_ACTIONS_"));
         let mut config: CodeActionsConfig = figment
             .extract()
-            .map_err(|e| CodeActionsConfigLoadFromAnchorError::new(anchor_path_utf8.clone(), e.into()))?;
+            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path_utf8.clone(), e.into()))?;
 
         // Validate configuration before compiling regex
         config
             .validate()
-            .map_err(|e| CodeActionsConfigLoadFromAnchorError::new(anchor_path_utf8.clone(), e.into()))?;
+            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path_utf8.clone(), e.into()))?;
         config
             .compile_regex_patterns()
-            .map_err(|e| CodeActionsConfigLoadFromAnchorError::new(anchor_path_utf8, e.into()))?;
+            .map_err(|e| ConfigLoadFromAnchorError::new(anchor_path_utf8, e.into()))?;
 
         Ok(config)
     }
@@ -115,10 +115,10 @@ impl CodeActionsConfig {
     }
 
     /// Compile regex patterns for all extra configs with validation
-    fn compile_regex_patterns(&mut self) -> Result<(), CodeActionsConfigCompileRegexPatternsError> {
+    fn compile_regex_patterns(&mut self) -> Result<(), ConfigCompileRegexPatternsError> {
         for extra in &mut self.extra {
             if extra.matches.is_empty() {
-                return Err(CodeActionsConfigCompileRegexPatternsError::EmptyPattern);
+                return Err(ConfigCompileRegexPatternsError::EmptyPattern);
             }
 
             extra.regex = Some(Regex::new(&extra.matches)?);
@@ -153,11 +153,11 @@ impl CodeActionsConfig {
     }
 
     /// Validate configuration rules
-    fn validate(&self) -> Result<(), CodeActionsConfigValidateError> {
+    fn validate(&self) -> Result<(), ConfigMatchesEmptyError> {
         for extra in &self.extra {
             // Check for empty patterns
             if extra.matches.is_empty() {
-                return Err(CodeActionsConfigValidateError::new());
+                return Err(ConfigMatchesEmptyError::new());
             }
 
             // Check for potentially dangerous patterns

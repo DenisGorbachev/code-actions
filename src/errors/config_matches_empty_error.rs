@@ -4,4 +4,4 @@ use fmt_derive::Display;
 
 #[derive(new, Error, Display, Eq, PartialEq, Clone, Debug)]
 #[display("Empty regex pattern not allowed")]
-pub struct CodeActionsConfigValidateError;
+pub struct ConfigMatchesEmptyError;
