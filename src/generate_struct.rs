@@ -1,11 +1,11 @@
+use crate::types::outcome::Outcome;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
-
-use crate::types::outcome::Outcome;
+use stub_macro::stub;
 
 use crate::extensions::camino::utf8_path::Utf8Path;
 use crate::extensions::std::path::file_stem::FileStem;
-use crate::functions::code_generation_helpers::{create_derive_attribute, create_use_statements, merge_derives};
+use crate::functions::code_generation_helpers::{create_derive_attribute_from_string, create_derive_attribute_from_syn_path, create_use_statements_from_string, create_use_statements_from_syn_path, merge_derives};
 use crate::functions::format::format_token_stream_prettyplease;
 use crate::types::config::Config;
 use crate::types::type_name::TypeName;
@@ -42,10 +42,10 @@ pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config)
     ];
     let extra_derives = config.get_extra_derives_for_name(&type_name);
     let all_derives = merge_derives(base_derives, &extra_derives);
-    let derive_attr = create_derive_attribute(&all_derives);
+    let derive_attr = create_derive_attribute_from_string(&all_derives);
 
     let extra_uses = config.get_extra_use_statements_for_name(&type_name);
-    let extra_use_statements = create_use_statements(&extra_uses);
+    let extra_use_statements = create_use_statements_from_string(&extra_uses);
 
     quote! {
         use derive_getters::Getters;
@@ -60,41 +60,23 @@ pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config)
     }
 }
 
-pub fn get_unit_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
-    get_unit_struct_token_stream_with_config(name, config)
-}
-
-pub fn get_unit_struct_token_stream_with_config(name: Ident, config: &Config) -> TokenStream {
-    let type_name = name.to_string();
-    let base_derives = &[
-        "Default",
-        "Eq",
-        "PartialEq",
-        "Ord",
-        "PartialOrd",
-        "Hash",
-        "Clone",
-        "Copy",
-        "Debug",
-    ];
-    let extra_derives = config.get_extra_derives_for_name(&type_name);
-    let all_derives = merge_derives(base_derives, &extra_derives);
-    let derive_attr = create_derive_attribute(&all_derives);
-
-    let extra_uses = config.get_extra_use_statements_for_name(&type_name);
-    let extra_use_statements = create_use_statements(&extra_uses);
-
+pub fn get_unit_struct_token_stream<'d>(name: Ident, use_statements: impl IntoIterator<Item = syn::Path>, derives: impl IntoIterator<Item = &'d syn::Path>) -> TokenStream {
+    let use_statements = create_use_statements_from_syn_path(use_statements);
+    let derive = create_derive_attribute_from_syn_path(derives);
     quote! {
-        #extra_use_statements
+        #use_statements
 
-        #derive_attr
+        #derive
         pub struct #name;
     }
 }
 
 /// Currently equivalent to unit struct, but may change in the future
-pub fn get_sigil_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
-    get_unit_struct_token_stream(name, config)
+pub fn get_sigil_struct_token_stream(name: Ident, _config: &Config) -> TokenStream {
+    // let _matches = stub!(());
+    let use_statements = stub!(Vec<syn::Path>);
+    let derives = stub!(Vec<&syn::Path>);
+    get_unit_struct_token_stream(name, use_statements, derives)
 }
 
 pub fn get_clap_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
@@ -106,10 +88,10 @@ pub fn get_clap_struct_token_stream_with_config(name: Ident, config: &Config) ->
     let base_derives = &["Parser", "Clone", "Debug"];
     let extra_derives = config.get_extra_derives_for_name(&type_name);
     let all_derives = merge_derives(base_derives, &extra_derives);
-    let derive_attr = create_derive_attribute(&all_derives);
+    let derive_attr = create_derive_attribute_from_string(&all_derives);
 
     let extra_uses = config.get_extra_use_statements_for_name(&type_name);
-    let extra_use_statements = create_use_statements(&extra_uses);
+    let extra_use_statements = create_use_statements_from_string(&extra_uses);
 
     quote! {
         use std::io::Write;

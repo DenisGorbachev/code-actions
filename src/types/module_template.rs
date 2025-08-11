@@ -1,6 +1,6 @@
 use clap::ValueEnum;
 use proc_macro2::{Ident, TokenStream};
-
+use stub_macro::stub;
 use ModuleTemplate::*;
 
 use crate::generate_enum::{get_clap_enum_token_stream, get_plain_enum_token_stream, get_regular_enum_token_stream};
@@ -42,7 +42,7 @@ impl ModuleTemplate {
         match self {
             Empty => Box::new(get_empty_module_token_stream),
             RegularStruct => Box::new(move |ident| get_regular_struct_token_stream(ident, config)),
-            UnitStruct => Box::new(move |ident| get_unit_struct_token_stream(ident, config)),
+            UnitStruct => Box::new(move |ident| get_unit_struct_token_stream(ident, stub!(Vec<syn::Path>), stub!(Vec<&syn::Path>))),
             NewtypeStruct => Box::new(get_newtype_wrapper_struct_token_stream),
             SubtypeStruct => Box::new(get_subtype_struct_token_stream),
             SigilStruct => Box::new(move |ident| get_sigil_struct_token_stream(ident, config)),
@@ -63,7 +63,7 @@ impl ModuleTemplate {
         use crate::generate_error_enum::get_error_enum_token_stream_with_config;
         use crate::generate_error_struct::get_error_struct_token_stream_with_config;
         use crate::generate_fn::get_fn_token_stream_with_config;
-        use crate::generate_struct::{get_clap_struct_token_stream_with_config, get_regular_struct_token_stream_with_config, get_unit_struct_token_stream_with_config};
+        use crate::generate_struct::{get_clap_struct_token_stream_with_config, get_regular_struct_token_stream_with_config};
         use crate::generate_trait::get_trait_token_stream_with_config;
         use crate::generate_type_alias::get_type_alias_token_stream_with_config;
 
@@ -72,10 +72,10 @@ impl ModuleTemplate {
         match self {
             Empty => get_empty_module_token_stream(ident),
             RegularStruct => get_regular_struct_token_stream_with_config(ident, config),
-            UnitStruct => get_unit_struct_token_stream_with_config(ident, config),
+            UnitStruct => get_unit_struct_token_stream(ident, stub!(Vec<syn::Path>), stub!(Vec<&syn::Path>)),
             NewtypeStruct => get_newtype_wrapper_struct_token_stream(ident),
             SubtypeStruct => get_subtype_struct_token_stream(ident),
-            SigilStruct => get_unit_struct_token_stream_with_config(ident, config), // Uses unit struct
+            SigilStruct => get_unit_struct_token_stream(ident, stub!(Vec<syn::Path>), stub!(Vec<&syn::Path>)), // Uses unit struct
             ClapStruct => get_clap_struct_token_stream_with_config(ident, config),
             ErrorStruct => get_error_struct_token_stream_with_config(ident, config),
             RegularEnum => get_regular_enum_token_stream_with_config(ident, config, &type_name),

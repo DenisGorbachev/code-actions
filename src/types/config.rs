@@ -4,10 +4,7 @@ use figment::{
 };
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::HashSet,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use crate::errors::{ConfigCompileRegexPatternsError, ConfigLoadFromAnchorError, ConfigMatchesEmptyError};
 
@@ -158,15 +155,7 @@ impl Config {
             .flat_map(|items| items.iter().cloned())
             .collect();
 
-        Self::deduplicate_preserving_order(items)
-    }
-
-    fn deduplicate_preserving_order(items: Vec<String>) -> Vec<String> {
-        let mut seen = HashSet::with_capacity(items.len());
         items
-            .into_iter()
-            .filter(|item| seen.insert(item.clone()))
-            .collect()
     }
 }
 

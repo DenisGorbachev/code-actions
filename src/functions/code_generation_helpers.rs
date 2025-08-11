@@ -13,7 +13,7 @@ pub fn merge_derives(base_derives: &[&str], extra_derives: &[String]) -> Vec<Str
     all_derives
 }
 
-pub fn create_derive_attribute(derives: &[String]) -> TokenStream {
+pub fn create_derive_attribute_from_string(derives: &[String]) -> TokenStream {
     if derives.is_empty() {
         return quote! {};
     }
@@ -23,7 +23,13 @@ pub fn create_derive_attribute(derives: &[String]) -> TokenStream {
     quote! { #[derive(#(#derive_idents),*)] }
 }
 
-pub fn create_use_statements(use_statements: &[String]) -> TokenStream {
+pub fn create_derive_attribute_from_syn_path<'a>(derives: impl IntoIterator<Item = &'a syn::Path>) -> TokenStream {
+    // let derive_idents: Vec<_> = derives.into_iter().collect();
+    let derive_idents = derives.into_iter();
+    quote! { #[derive(#(#derive_idents),*)] }
+}
+
+pub fn create_use_statements_from_string(use_statements: &[String]) -> TokenStream {
     if use_statements.is_empty() {
         return quote! {};
     }
@@ -36,5 +42,13 @@ pub fn create_use_statements(use_statements: &[String]) -> TokenStream {
         tokens.extend(quote! { use #use_tokens; });
     }
 
+    tokens
+}
+
+pub fn create_use_statements_from_syn_path(use_statements: impl IntoIterator<Item = syn::Path>) -> TokenStream {
+    let mut tokens = TokenStream::new();
+    for use_path in use_statements {
+        tokens.extend(quote! { use #use_path; });
+    }
     tokens
 }
