@@ -42,7 +42,7 @@ impl ModuleTemplate {
         match self {
             Empty => Box::new(get_empty_module_token_stream),
             RegularStruct => Box::new(move |ident| get_regular_struct_token_stream(ident, config)),
-            UnitStruct => Box::new(move |ident| get_unit_struct_token_stream(ident, stub!(Vec<syn::Path>), stub!(Vec<&syn::Path>))),
+            UnitStruct => Box::new(move |ident| get_unit_struct_token_stream(ident, stub!(Vec<syn::UseTree>), stub!(Vec<&syn::Path>))),
             NewtypeStruct => Box::new(get_newtype_wrapper_struct_token_stream),
             SubtypeStruct => Box::new(get_subtype_struct_token_stream),
             SigilStruct => Box::new(move |ident| get_sigil_struct_token_stream(ident, config)),
@@ -72,10 +72,10 @@ impl ModuleTemplate {
         match self {
             Empty => get_empty_module_token_stream(ident),
             RegularStruct => get_regular_struct_token_stream_with_config(ident, config),
-            UnitStruct => get_unit_struct_token_stream(ident, stub!(Vec<syn::Path>), stub!(Vec<&syn::Path>)),
+            UnitStruct => get_unit_struct_token_stream(ident, stub!(Vec<syn::UseTree>), stub!(Vec<&syn::Path>)),
             NewtypeStruct => get_newtype_wrapper_struct_token_stream(ident),
             SubtypeStruct => get_subtype_struct_token_stream(ident),
-            SigilStruct => get_unit_struct_token_stream(ident, stub!(Vec<syn::Path>), stub!(Vec<&syn::Path>)), // Uses unit struct
+            SigilStruct => get_unit_struct_token_stream(ident, stub!(Vec<syn::UseTree>), stub!(Vec<&syn::Path>)), // Uses unit struct
             ClapStruct => get_clap_struct_token_stream_with_config(ident, config),
             ErrorStruct => get_error_struct_token_stream_with_config(ident, config),
             RegularEnum => get_regular_enum_token_stream_with_config(ident, config, &type_name),

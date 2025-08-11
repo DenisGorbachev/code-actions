@@ -10,5 +10,7 @@ pub mod module_token_stream;
 pub mod outcome;
 pub mod package_info;
 pub mod project_root;
+pub mod syn_path_serde;
+pub mod syn_use_tree_serde;
 pub mod toml_file;
 pub mod type_name;

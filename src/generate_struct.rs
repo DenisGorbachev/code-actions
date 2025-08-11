@@ -5,7 +5,7 @@ use stub_macro::stub;
 
 use crate::extensions::camino::utf8_path::Utf8Path;
 use crate::extensions::std::path::file_stem::FileStem;
-use crate::functions::code_generation_helpers::{create_derive_attribute_from_string, create_derive_attribute_from_syn_path, create_use_statements_from_string, create_use_statements_from_syn_path, merge_derives};
+use crate::functions::code_generation_helpers::{create_derive_attribute_from_syn_path, create_use_statements_from_syn_use_tree};
 use crate::functions::format::format_token_stream_prettyplease;
 use crate::types::config::Config;
 use crate::types::type_name::TypeName;
@@ -26,31 +26,13 @@ pub fn get_regular_struct_token_stream(name: Ident, config: &Config) -> TokenStr
 
 pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config) -> TokenStream {
     let type_name = name.to_string();
-    let base_derives = &[
-        "new",
-        "Getters",
-        "From",
-        "Into",
-        "Ord",
-        "PartialOrd",
-        "Eq",
-        "PartialEq",
-        "Default",
-        "Hash",
-        "Clone",
-        "Debug",
-    ];
     let extra_derives = config.get_extra_derives_for_name(&type_name);
-    let all_derives = merge_derives(base_derives, &extra_derives);
-    let derive_attr = create_derive_attribute_from_string(&all_derives);
+    let derive_attr = create_derive_attribute_from_syn_path(extra_derives.iter());
 
     let extra_uses = config.get_extra_use_statements_for_name(&type_name);
-    let extra_use_statements = create_use_statements_from_string(&extra_uses);
+    let extra_use_statements = create_use_statements_from_syn_use_tree(extra_uses);
 
     quote! {
-        use derive_getters::Getters;
-        use derive_more::{From, Into};
-        use derive_new::new;
         #extra_use_statements
 
         #derive_attr
@@ -60,13 +42,13 @@ pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config)
     }
 }
 
-pub fn get_unit_struct_token_stream<'d>(name: Ident, use_statements: impl IntoIterator<Item = syn::Path>, derives: impl IntoIterator<Item = &'d syn::Path>) -> TokenStream {
-    let use_statements = create_use_statements_from_syn_path(use_statements);
-    let derive = create_derive_attribute_from_syn_path(derives);
+pub fn get_unit_struct_token_stream<'d>(name: Ident, use_statements: impl IntoIterator<Item = syn::UseTree>, derives: impl IntoIterator<Item = &'d syn::Path>) -> TokenStream {
+    let use_statements_tokens = create_use_statements_from_syn_use_tree(use_statements);
+    let derive_attr = create_derive_attribute_from_syn_path(derives);
     quote! {
-        #use_statements
+        #use_statements_tokens
 
-        #derive
+        #derive_attr
         pub struct #name;
     }
 }
@@ -74,7 +56,7 @@ pub fn get_unit_struct_token_stream<'d>(name: Ident, use_statements: impl IntoIt
 /// Currently equivalent to unit struct, but may change in the future
 pub fn get_sigil_struct_token_stream(name: Ident, _config: &Config) -> TokenStream {
     // let _matches = stub!(());
-    let use_statements = stub!(Vec<syn::Path>);
+    let use_statements = stub!(Vec<syn::UseTree>);
     let derives = stub!(Vec<&syn::Path>);
     get_unit_struct_token_stream(name, use_statements, derives)
 }
@@ -85,17 +67,13 @@ pub fn get_clap_struct_token_stream(name: Ident, config: &Config) -> TokenStream
 
 pub fn get_clap_struct_token_stream_with_config(name: Ident, config: &Config) -> TokenStream {
     let type_name = name.to_string();
-    let base_derives = &["Parser", "Clone", "Debug"];
     let extra_derives = config.get_extra_derives_for_name(&type_name);
-    let all_derives = merge_derives(base_derives, &extra_derives);
-    let derive_attr = create_derive_attribute_from_string(&all_derives);
+    let derive_attr = create_derive_attribute_from_syn_path(extra_derives.iter());
 
     let extra_uses = config.get_extra_use_statements_for_name(&type_name);
-    let extra_use_statements = create_use_statements_from_string(&extra_uses);
+    let extra_use_statements = create_use_statements_from_syn_use_tree(extra_uses);
 
     quote! {
-        use std::io::Write;
-        use clap::Parser;
         #extra_use_statements
 
         #derive_attr

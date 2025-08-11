@@ -1,4 +1,4 @@
-use crate::functions::code_generation_helpers::{create_derive_attribute_from_string, create_use_statements_from_string, merge_derives};
+use crate::functions::code_generation_helpers::{create_derive_attribute_from_syn_path, create_use_statements_from_syn_use_tree};
 use crate::types::config::Config;
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
@@ -9,26 +9,13 @@ pub fn get_regular_enum_token_stream(name: Ident, config: &Config) -> TokenStrea
 }
 
 pub fn get_regular_enum_token_stream_with_config(name: Ident, config: &Config, type_name: &impl AsRef<str>) -> TokenStream {
-    let base_derives = &[
-        "From",
-        "Ord",
-        "PartialOrd",
-        "Eq",
-        "PartialEq",
-        "Hash",
-        "Clone",
-        "Copy",
-        "Debug",
-    ];
     let extra_derives = config.get_extra_derives_for_name(type_name);
-    let all_derives = merge_derives(base_derives, &extra_derives);
-    let derive_attr = create_derive_attribute_from_string(&all_derives);
+    let derive_attr = create_derive_attribute_from_syn_path(extra_derives.iter());
 
     let extra_uses = config.get_extra_use_statements_for_name(type_name);
-    let extra_use_statements = create_use_statements_from_string(&extra_uses);
+    let extra_use_statements = create_use_statements_from_syn_use_tree(extra_uses);
 
     quote! {
-        use derive_more::From;
         #extra_use_statements
 
         #derive_attr
@@ -46,26 +33,13 @@ pub fn get_plain_enum_token_stream(name: Ident, config: &Config) -> TokenStream 
 }
 
 pub fn get_plain_enum_token_stream_with_config(name: Ident, config: &Config, type_name: &impl AsRef<str>) -> TokenStream {
-    let base_derives = &[
-        "Display",
-        "Ord",
-        "PartialOrd",
-        "Eq",
-        "PartialEq",
-        "Hash",
-        "Clone",
-        "Copy",
-        "Debug",
-    ];
     let extra_derives = config.get_extra_derives_for_name(type_name);
-    let all_derives = merge_derives(base_derives, &extra_derives);
-    let derive_attr = create_derive_attribute_from_string(&all_derives);
+    let derive_attr = create_derive_attribute_from_syn_path(extra_derives.iter());
 
     let extra_uses = config.get_extra_use_statements_for_name(type_name);
-    let extra_use_statements = create_use_statements_from_string(&extra_uses);
+    let extra_use_statements = create_use_statements_from_syn_use_tree(extra_uses);
 
     quote! {
-        use strum::Display;
         #[allow(unused_imports)]
         use #name::*;
         #extra_use_statements
@@ -83,17 +57,13 @@ pub fn get_clap_enum_token_stream(name: Ident, config: &Config) -> TokenStream {
 }
 
 pub fn get_clap_enum_token_stream_with_config(name: Ident, config: &Config, type_name: &impl AsRef<str>) -> TokenStream {
-    let base_derives = &["Parser", "Clone", "Debug"];
     let extra_derives = config.get_extra_derives_for_name(type_name);
-    let all_derives = merge_derives(base_derives, &extra_derives);
-    let derive_attr = create_derive_attribute_from_string(&all_derives);
+    let derive_attr = create_derive_attribute_from_syn_path(extra_derives.iter());
 
     let extra_uses = config.get_extra_use_statements_for_name(type_name);
-    let extra_use_statements = create_use_statements_from_string(&extra_uses);
+    let extra_use_statements = create_use_statements_from_syn_use_tree(extra_uses);
 
     quote! {
-        use std::io::Write;
-        use clap::Parser;
         #extra_use_statements
 
         #derive_attr

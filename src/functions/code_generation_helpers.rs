@@ -1,54 +1,15 @@
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
-
-pub fn merge_derives(base_derives: &[&str], extra_derives: &[String]) -> Vec<String> {
-    let mut all_derives: Vec<String> = base_derives.iter().map(|s| s.to_string()).collect();
-
-    for derive in extra_derives {
-        if !all_derives.contains(derive) {
-            all_derives.push(derive.clone());
-        }
-    }
-
-    all_derives
-}
-
-pub fn create_derive_attribute_from_string(derives: &[String]) -> TokenStream {
-    if derives.is_empty() {
-        return quote! {};
-    }
-
-    let derive_idents: Vec<_> = derives.iter().map(|d| format_ident!("{}", d)).collect();
-
-    quote! { #[derive(#(#derive_idents),*)] }
-}
+use quote::quote;
 
 pub fn create_derive_attribute_from_syn_path<'a>(derives: impl IntoIterator<Item = &'a syn::Path>) -> TokenStream {
-    // let derive_idents: Vec<_> = derives.into_iter().collect();
     let derive_idents = derives.into_iter();
     quote! { #[derive(#(#derive_idents),*)] }
 }
 
-pub fn create_use_statements_from_string(use_statements: &[String]) -> TokenStream {
-    if use_statements.is_empty() {
-        return quote! {};
-    }
-
+pub fn create_use_statements_from_syn_use_tree(use_statements: impl IntoIterator<Item = syn::UseTree>) -> TokenStream {
     let mut tokens = TokenStream::new();
-    for use_stmt in use_statements {
-        let use_tokens = use_stmt
-            .parse::<TokenStream>()
-            .unwrap_or_else(|_| quote! { compile_error!(concat!("Invalid use statement: ", #use_stmt)); });
-        tokens.extend(quote! { use #use_tokens; });
-    }
-
-    tokens
-}
-
-pub fn create_use_statements_from_syn_path(use_statements: impl IntoIterator<Item = syn::Path>) -> TokenStream {
-    let mut tokens = TokenStream::new();
-    for use_path in use_statements {
-        tokens.extend(quote! { use #use_path; });
+    for use_tree in use_statements {
+        tokens.extend(quote! { use #use_tree; });
     }
     tokens
 }

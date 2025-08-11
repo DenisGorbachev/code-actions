@@ -1,4 +1,4 @@
-use crate::functions::code_generation_helpers::create_use_statements_from_string;
+use crate::functions::code_generation_helpers::create_use_statements_from_syn_use_tree;
 use crate::types::config::Config;
 use crate::types::outcome::Outcome;
 use fs_err::File;
@@ -39,7 +39,7 @@ pub fn get_trait_token_stream_with_config(trait_name: Ident, config: &Config) ->
     let type_name = trait_name.to_string();
     let method_name = trait_name.to_snake_case();
     let extra_uses = config.get_extra_use_statements_for_name(&type_name);
-    let extra_use_statements = create_use_statements_from_string(&extra_uses);
+    let extra_use_statements = create_use_statements_from_syn_use_tree(extra_uses);
 
     quote! {
         #extra_use_statements
