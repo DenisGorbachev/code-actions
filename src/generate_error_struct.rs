@@ -5,11 +5,11 @@ use quote::quote;
 
 /// Using `fmt_derive::Display` because it formats the error using the Debug impl (which includes the error name & all fields)
 pub fn get_error_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
-    let type_name = name.to_string();
-    get_error_struct_token_stream_with_config(name, config, &type_name)
+    get_error_struct_token_stream_with_config(name, config)
 }
 
-pub fn get_error_struct_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
+pub fn get_error_struct_token_stream_with_config(name: Ident, config: &Config) -> TokenStream {
+    let type_name = name.to_string();
     let base_derives = &[
         "new",
         "Error",

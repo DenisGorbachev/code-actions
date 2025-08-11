@@ -32,11 +32,11 @@ pub fn get_trait_file_contents(path: &Utf8Path) -> Outcome<String> {
 }
 
 pub fn get_trait_token_stream(trait_name: Ident, config: &Config) -> TokenStream {
-    let type_name = trait_name.to_string();
-    get_trait_token_stream_with_config(trait_name, config, &type_name)
+    get_trait_token_stream_with_config(trait_name, config)
 }
 
-pub fn get_trait_token_stream_with_config(trait_name: Ident, config: &Config, type_name: &str) -> TokenStream {
+pub fn get_trait_token_stream_with_config(trait_name: Ident, config: &Config) -> TokenStream {
+    let type_name = trait_name.to_string();
     let method_name = trait_name.to_snake_case();
     let extra_uses = config.get_extra_use_statements_for_name(&type_name);
     let extra_use_statements = create_use_statements(&extra_uses);

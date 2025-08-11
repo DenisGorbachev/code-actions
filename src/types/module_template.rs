@@ -71,20 +71,20 @@ impl ModuleTemplate {
 
         match self {
             Empty => get_empty_module_token_stream(ident),
-            RegularStruct => get_regular_struct_token_stream_with_config(ident, config, &type_name),
-            UnitStruct => get_unit_struct_token_stream_with_config(ident, config, &type_name),
+            RegularStruct => get_regular_struct_token_stream_with_config(ident, config),
+            UnitStruct => get_unit_struct_token_stream_with_config(ident, config),
             NewtypeStruct => get_newtype_wrapper_struct_token_stream(ident),
             SubtypeStruct => get_subtype_struct_token_stream(ident),
-            SigilStruct => get_unit_struct_token_stream_with_config(ident, config, &type_name), // Uses unit struct
-            ClapStruct => get_clap_struct_token_stream_with_config(ident, config, &type_name),
-            ErrorStruct => get_error_struct_token_stream_with_config(ident, config, &type_name),
+            SigilStruct => get_unit_struct_token_stream_with_config(ident, config), // Uses unit struct
+            ClapStruct => get_clap_struct_token_stream_with_config(ident, config),
+            ErrorStruct => get_error_struct_token_stream_with_config(ident, config),
             RegularEnum => get_regular_enum_token_stream_with_config(ident, config, &type_name),
             PlainEnum => get_plain_enum_token_stream_with_config(ident, config, &type_name),
             ClapEnum => get_clap_enum_token_stream_with_config(ident, config, &type_name),
-            ErrorEnum => get_error_enum_token_stream_with_config(ident, config, &type_name),
-            TypeAlias => get_type_alias_token_stream_with_config(ident, config, &type_name),
-            Trait => get_trait_token_stream_with_config(ident, config, &type_name),
-            Fn => get_fn_token_stream_with_config(ident, config, &type_name),
+            ErrorEnum => get_error_enum_token_stream_with_config(ident, config),
+            TypeAlias => get_type_alias_token_stream_with_config(ident, config),
+            Trait => get_trait_token_stream_with_config(ident, config),
+            Fn => get_fn_token_stream_with_config(ident, config),
         }
     }
 }

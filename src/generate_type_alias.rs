@@ -33,11 +33,11 @@ pub fn get_type_alias_file_contents(path: &Utf8Path) -> Outcome<String> {
 }
 
 pub fn get_type_alias_token_stream(name: Ident, config: &Config) -> TokenStream {
-    let type_name = name.to_string();
-    get_type_alias_token_stream_with_config(name, config, &type_name)
+    get_type_alias_token_stream_with_config(name, config)
 }
 
-pub fn get_type_alias_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
+pub fn get_type_alias_token_stream_with_config(name: Ident, config: &Config) -> TokenStream {
+    let type_name = name.to_string();
     let extra_uses = config.get_extra_use_statements_for_name(&type_name);
     let extra_use_statements = create_use_statements(&extra_uses);
 

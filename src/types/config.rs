@@ -257,7 +257,7 @@ use = ["std::fmt"]
         config.compile_regex_patterns().unwrap();
 
         let struct_name = format_ident!("UserStruct");
-        let token_stream = get_regular_struct_token_stream_with_config(struct_name, &config, "UserStruct");
+        let token_stream = get_regular_struct_token_stream_with_config(struct_name, &config);
 
         let code_string = token_stream.to_string();
 

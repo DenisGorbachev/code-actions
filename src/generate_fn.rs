@@ -6,11 +6,11 @@ use quote::quote;
 use crate::extensions::syn::IdentExt;
 
 pub fn get_fn_token_stream(name: Ident, config: &Config) -> TokenStream {
-    let type_name = name.to_string();
-    get_fn_token_stream_with_config(name, config, &type_name)
+    get_fn_token_stream_with_config(name, config)
 }
 
-pub fn get_fn_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
+pub fn get_fn_token_stream_with_config(name: Ident, config: &Config) -> TokenStream {
+    let type_name = name.to_string();
     let snake_name = name.to_snake_case();
     let extra_uses = config.get_extra_use_statements_for_name(&type_name);
     let extra_use_statements = create_use_statements(&extra_uses);

@@ -15,17 +15,17 @@ pub fn get_struct_file_contents(path: &Utf8Path, config: &Config) -> Outcome<Str
     let type_name = TypeName::from(*stem);
     let name = format_ident!("{}", &type_name);
 
-    let content = get_regular_struct_token_stream_with_config(name, config, &type_name.to_string());
+    let content = get_regular_struct_token_stream_with_config(name, config);
     Ok(format_token_stream_prettyplease(content)?)
 }
 
 /// `Ord, PartialOrd` is useful for generic structs
 pub fn get_regular_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
-    let type_name = name.to_string();
-    get_regular_struct_token_stream_with_config(name, config, &type_name)
+    get_regular_struct_token_stream_with_config(name, config)
 }
 
-pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
+pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config) -> TokenStream {
+    let type_name = name.to_string();
     let base_derives = &[
         "new",
         "Getters",
@@ -61,11 +61,11 @@ pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config,
 }
 
 pub fn get_unit_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
-    let type_name = name.to_string();
-    get_unit_struct_token_stream_with_config(name, config, &type_name)
+    get_unit_struct_token_stream_with_config(name, config)
 }
 
-pub fn get_unit_struct_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
+pub fn get_unit_struct_token_stream_with_config(name: Ident, config: &Config) -> TokenStream {
+    let type_name = name.to_string();
     let base_derives = &[
         "Default",
         "Eq",
@@ -98,11 +98,11 @@ pub fn get_sigil_struct_token_stream(name: Ident, config: &Config) -> TokenStrea
 }
 
 pub fn get_clap_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
-    let type_name = name.to_string();
-    get_clap_struct_token_stream_with_config(name, config, &type_name)
+    get_clap_struct_token_stream_with_config(name, config)
 }
 
-pub fn get_clap_struct_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
+pub fn get_clap_struct_token_stream_with_config(name: Ident, config: &Config) -> TokenStream {
+    let type_name = name.to_string();
     let base_derives = &["Parser", "Clone", "Debug"];
     let extra_derives = config.get_extra_derives_for_name(&type_name);
     let all_derives = merge_derives(base_derives, &extra_derives);
