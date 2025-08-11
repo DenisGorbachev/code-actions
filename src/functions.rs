@@ -1,3 +1,4 @@
+pub mod code_generation_helpers;
 pub mod filter_map_impossible_derives;
 pub mod format;
 pub mod get_clippy_messages;

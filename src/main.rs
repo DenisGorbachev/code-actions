@@ -1,6 +1,7 @@
 use clap::{value_parser, Parser, Subcommand};
 use code_actions::types::module_template::ModuleTemplate;
 use code_actions::types::outcome::Outcome;
+use std::path::Path;
 use stub_macro::stub;
 use time::OffsetDateTime;
 use xshell::Shell;
@@ -22,6 +23,7 @@ use code_actions::get_freewrite_path_from_anchor_path::get_freewrite_path_from_a
 use code_actions::get_relative_path::get_relative_path_anchor_subdir_name_suffix;
 use code_actions::remove_module_by_path::remove_module_by_path;
 use code_actions::traits::discard::Discard;
+use code_actions::types::config::Config;
 use code_actions::types::label::Label;
 
 #[derive(Parser)]
@@ -34,10 +36,27 @@ use code_actions::types::label::Label;
 struct Cli {
     #[command(subcommand)]
     command: Command,
+    /// Path to the configuration file or directory to search for config
+    #[arg(long, global = true, value_parser = value_parser!(Utf8PathBuf))]
+    config: Option<Utf8PathBuf>,
 }
 
 impl Cli {
+    fn get_config_path(&self) -> Utf8PathBuf {
+        // Use explicit config path if provided, otherwise use the anchor path from command
+        self.config.clone().unwrap_or_else(|| {
+            self.command
+                .get_anchor_path()
+                .map(|p| p.to_path_buf())
+                .unwrap_or_else(|| Utf8PathBuf::from("."))
+        })
+    }
+
     pub fn run(self) -> Outcome {
+        // Load config once at the beginning
+        let config_path = self.get_config_path();
+        let config = Config::try_from(config_path.as_ref())?;
+
         use Command::*;
         match self.command {
             AddDependency {
@@ -82,7 +101,7 @@ impl Cli {
                         anchor,
                         label,
                         template,
-                    } => create_module_file_from_anchor_label(anchor.as_ref(), &label, template).discard(),
+                    } => create_module_file_from_anchor_label(anchor.as_ref(), &label, template, &config).discard(),
                     ImplFromAnchorTraitPath {
                         anchor,
                         trait_path,
@@ -100,7 +119,7 @@ impl Cli {
                     ModuleFromPath {
                         path,
                         template,
-                    } => append_to_module_file_from_path(path.as_ref(), template).discard(),
+                    } => append_to_module_file_from_path(path.as_ref(), template, &config).discard(),
                 }
             }
             Remove {
@@ -243,6 +262,58 @@ enum Command {
     },
 }
 
+impl Command {
+    fn get_anchor_path(&self) -> Option<&Utf8Path> {
+        match self {
+            Command::AddDependency {
+                command,
+            } => command.get_anchor_path(),
+            Command::RemoveDependency {
+                anchor,
+                ..
+            } => Some(anchor.as_ref()),
+            Command::Generate {
+                command,
+            } => {
+                let path = command.config_path();
+                // Convert Path to str first
+                path.to_str()
+                    .map(|s| Utf8Path::new(camino::Utf8Path::new(s)))
+            }
+            Command::Append {
+                command,
+            } => command.get_anchor_path(),
+            Command::Remove {
+                command,
+            } => command.get_path(),
+            Command::FixName {
+                anchor,
+            } => Some(anchor.as_ref()),
+            Command::FixImpossibleDerives {
+                anchor,
+            } => Some(anchor.as_ref()),
+            Command::FixMulti {
+                anchor,
+            } => Some(anchor.as_ref()),
+            Command::FixImports {
+                anchor,
+                ..
+            } => Some(anchor.as_ref()),
+            Command::CleanExternalPathDeps {
+                anchor,
+                ..
+            } => Some(anchor.as_ref()),
+            Command::ExtractPackageIntoRepository {
+                source,
+                ..
+            } => Some(source.as_ref()),
+            Command::Print {
+                command,
+            } => command.get_anchor_path(),
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum AddDependencyCommand {
     Global {
@@ -257,6 +328,21 @@ enum AddDependencyCommand {
         anchor: Utf8PathBuf,
         crate_name: String,
     },
+}
+
+impl AddDependencyCommand {
+    fn get_anchor_path(&self) -> Option<&Utf8Path> {
+        match self {
+            AddDependencyCommand::Global {
+                anchor,
+                ..
+            } => Some(anchor.as_ref()),
+            AddDependencyCommand::Local {
+                anchor,
+                ..
+            } => Some(anchor.as_ref()),
+        }
+    }
 }
 
 #[derive(Subcommand)]
@@ -295,6 +381,37 @@ enum GenerateCommand {
     },
 }
 
+impl GenerateCommand {
+    pub fn config_path(&self) -> &Path {
+        match self {
+            GenerateCommand::Package {
+                anchor,
+                ..
+            } => anchor.as_ref(),
+            GenerateCommand::ModuleFromPath {
+                path,
+                ..
+            } => path.as_ref(),
+            GenerateCommand::ModuleFromAnchorSubdirLabel {
+                anchor,
+                ..
+            } => anchor.as_ref(),
+            GenerateCommand::ModuleFromAnchorLabel {
+                anchor,
+                ..
+            } => anchor.as_ref(),
+            GenerateCommand::ImplFromAnchorTraitPath {
+                anchor,
+                ..
+            } => anchor.as_ref(),
+            GenerateCommand::FreewriteFileFromAnchor {
+                anchor,
+                ..
+            } => anchor.as_ref(),
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum AppendCommand {
     ModuleFromPath {
@@ -305,12 +422,33 @@ enum AppendCommand {
     },
 }
 
+impl AppendCommand {
+    fn get_anchor_path(&self) -> Option<&Utf8Path> {
+        match self {
+            AppendCommand::ModuleFromPath {
+                path,
+                ..
+            } => Some(path.as_ref()),
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum RemoveCommand {
     ModuleByPath {
         #[arg(value_parser = value_parser!(Utf8PathBuf))]
         path: Utf8PathBuf,
     },
+}
+
+impl RemoveCommand {
+    fn get_path(&self) -> Option<&Utf8Path> {
+        match self {
+            RemoveCommand::ModuleByPath {
+                path,
+            } => Some(path.as_ref()),
+        }
+    }
 }
 
 #[derive(Subcommand)]
@@ -331,6 +469,22 @@ enum PrintCommand {
         #[arg(value_parser = value_parser!(Utf8PathBuf))]
         anchor: Utf8PathBuf,
     },
+}
+
+impl PrintCommand {
+    fn get_anchor_path(&self) -> Option<&Utf8Path> {
+        match self {
+            PrintCommand::Module {
+                ..
+            } => None,
+            PrintCommand::RelativePath {
+                ..
+            } => None,
+            PrintCommand::FreewritePath {
+                anchor,
+            } => Some(anchor.as_ref()),
+        }
+    }
 }
 
 fn main() -> Outcome {

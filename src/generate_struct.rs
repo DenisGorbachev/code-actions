@@ -5,64 +5,24 @@ use crate::types::outcome::Outcome;
 
 use crate::extensions::camino::utf8_path::Utf8Path;
 use crate::extensions::std::path::file_stem::FileStem;
+use crate::functions::code_generation_helpers::{create_derive_attribute, create_use_statements, merge_derives};
 use crate::functions::format::format_token_stream_prettyplease;
 use crate::types::config::Config;
 use crate::types::type_name::TypeName;
 
-pub fn get_struct_file_contents(path: &Utf8Path) -> Outcome<String> {
+pub fn get_struct_file_contents(path: &Utf8Path, config: &Config) -> Outcome<String> {
     let stem = FileStem::try_from(path)?;
     let type_name = TypeName::from(*stem);
     let name = format_ident!("{}", &type_name);
 
-    // Try to load config, use default if not found
-    let config = Config::try_from(path.as_std_path())?;
-    let content = get_regular_struct_token_stream_with_config(name, &config, &type_name.to_string());
+    let content = get_regular_struct_token_stream_with_config(name, config, &type_name.to_string());
     Ok(format_token_stream_prettyplease(content)?)
 }
 
-fn merge_derives(base_derives: &[&str], extra_derives: &[String]) -> Vec<String> {
-    let mut all_derives: Vec<String> = base_derives.iter().map(|s| s.to_string()).collect();
-
-    for derive in extra_derives {
-        if !all_derives.contains(derive) {
-            all_derives.push(derive.clone());
-        }
-    }
-
-    all_derives
-}
-
-fn create_derive_attribute(derives: &[String]) -> TokenStream {
-    if derives.is_empty() {
-        return quote! {};
-    }
-
-    let derive_idents: Vec<_> = derives.iter().map(|d| format_ident!("{}", d)).collect();
-
-    quote! { #[derive(#(#derive_idents),*)] }
-}
-
-fn create_use_statements(use_statements: &[String]) -> TokenStream {
-    if use_statements.is_empty() {
-        return quote! {};
-    }
-
-    let mut tokens = TokenStream::new();
-    for use_stmt in use_statements {
-        let use_tokens = use_stmt
-            .parse::<TokenStream>()
-            .unwrap_or_else(|_| quote! { compile_error!(concat!("Invalid use statement: ", #use_stmt)); });
-        tokens.extend(quote! { use #use_tokens; });
-    }
-
-    tokens
-}
-
 /// `Ord, PartialOrd` is useful for generic structs
-pub fn get_regular_struct_token_stream(name: Ident) -> TokenStream {
-    let config = Config::default();
+pub fn get_regular_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
     let type_name = name.to_string();
-    get_regular_struct_token_stream_with_config(name, &config, &type_name)
+    get_regular_struct_token_stream_with_config(name, config, &type_name)
 }
 
 pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
@@ -80,11 +40,11 @@ pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config,
         "Clone",
         "Debug",
     ];
-    let extra_derives = config.get_extra_derives_for_name(type_name);
+    let extra_derives = config.get_extra_derives_for_name(&type_name);
     let all_derives = merge_derives(base_derives, &extra_derives);
     let derive_attr = create_derive_attribute(&all_derives);
 
-    let extra_uses = config.get_extra_use_statements_for_name(type_name);
+    let extra_uses = config.get_extra_use_statements_for_name(&type_name);
     let extra_use_statements = create_use_statements(&extra_uses);
 
     quote! {
@@ -100,10 +60,9 @@ pub fn get_regular_struct_token_stream_with_config(name: Ident, config: &Config,
     }
 }
 
-pub fn get_unit_struct_token_stream(name: Ident) -> TokenStream {
-    let config = Config::default();
+pub fn get_unit_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
     let type_name = name.to_string();
-    get_unit_struct_token_stream_with_config(name, &config, &type_name)
+    get_unit_struct_token_stream_with_config(name, config, &type_name)
 }
 
 pub fn get_unit_struct_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
@@ -118,11 +77,11 @@ pub fn get_unit_struct_token_stream_with_config(name: Ident, config: &Config, ty
         "Copy",
         "Debug",
     ];
-    let extra_derives = config.get_extra_derives_for_name(type_name);
+    let extra_derives = config.get_extra_derives_for_name(&type_name);
     let all_derives = merge_derives(base_derives, &extra_derives);
     let derive_attr = create_derive_attribute(&all_derives);
 
-    let extra_uses = config.get_extra_use_statements_for_name(type_name);
+    let extra_uses = config.get_extra_use_statements_for_name(&type_name);
     let extra_use_statements = create_use_statements(&extra_uses);
 
     quote! {
@@ -134,23 +93,22 @@ pub fn get_unit_struct_token_stream_with_config(name: Ident, config: &Config, ty
 }
 
 /// Currently equivalent to unit struct, but may change in the future
-pub fn get_sigil_struct_token_stream(name: Ident) -> TokenStream {
-    get_unit_struct_token_stream(name)
+pub fn get_sigil_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
+    get_unit_struct_token_stream(name, config)
 }
 
-pub fn get_clap_struct_token_stream(name: Ident) -> TokenStream {
-    let config = Config::default();
+pub fn get_clap_struct_token_stream(name: Ident, config: &Config) -> TokenStream {
     let type_name = name.to_string();
-    get_clap_struct_token_stream_with_config(name, &config, &type_name)
+    get_clap_struct_token_stream_with_config(name, config, &type_name)
 }
 
 pub fn get_clap_struct_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
     let base_derives = &["Parser", "Clone", "Debug"];
-    let extra_derives = config.get_extra_derives_for_name(type_name);
+    let extra_derives = config.get_extra_derives_for_name(&type_name);
     let all_derives = merge_derives(base_derives, &extra_derives);
     let derive_attr = create_derive_attribute(&all_derives);
 
-    let extra_uses = config.get_extra_use_statements_for_name(type_name);
+    let extra_uses = config.get_extra_use_statements_for_name(&type_name);
     let extra_use_statements = create_use_statements(&extra_uses);
 
     quote! {
@@ -171,6 +129,7 @@ pub fn get_clap_struct_token_stream_with_config(name: Ident, config: &Config, ty
 
 #[cfg(test)]
 mod tests {
+    use crate::types::config::Config;
     use anyhow::Context;
     use assert_matches::assert_matches;
     use derive_getters::{Dissolve, Getters};
@@ -199,7 +158,8 @@ mod tests {
         let (anchor, label) = get_struct_anchor_label_from_temp_dir(&root)?.dissolve();
         let path = get_relative_path_anchor_label_rs(anchor.as_ref(), label.as_ref())?;
         create_file_all(path.as_path())?;
-        let result = create_module_file_from_anchor_label(anchor.as_ref(), label.as_ref(), RegularStruct);
+        let config = Config::default();
+        let result = create_module_file_from_anchor_label(anchor.as_ref(), label.as_ref(), RegularStruct, &config);
         assert_matches!(result, Err(ref err) if format!("{err:?}").contains("already exists"));
         Ok(())
     }
@@ -208,7 +168,8 @@ mod tests {
     fn test_existing_dir() -> Outcome {
         let (_root, anchor, label) = get_struct_path_buf()?.dissolve();
         create_dir_all(anchor.as_path())?;
-        create_module_file_from_anchor_label(anchor.as_ref(), label.as_ref(), RegularStruct)?;
+        let config = Config::default();
+        create_module_file_from_anchor_label(anchor.as_ref(), label.as_ref(), RegularStruct, &config)?;
         Ok(())
     }
 
@@ -229,7 +190,8 @@ mod tests {
         let path = get_relative_path_anchor_label_rs(anchor.as_ref(), label.as_ref())?;
         remove_file(test_helpers::get_main_rs_path(&root))?;
         test_helpers::create_lib_rs(&root)?;
-        create_module_file_from_anchor_label(anchor.as_path(), label.as_str(), RegularStruct)?;
+        let config = Config::default();
+        create_module_file_from_anchor_label(anchor.as_path(), label.as_str(), RegularStruct, &config)?;
         assert_file_contains(&path, "Struct")?;
         assert_file_contains(&test_helpers::get_lib_rs_path(&root), "mod some;")?;
         assert_file_contains(&test_helpers::get_lib_rs_path(&root), "pub use some::*;")?;
@@ -249,7 +211,8 @@ mod tests {
 
     fn generate_struct() -> Outcome<RootAnchorLabel> {
         let chest = get_struct_path_buf().context("Could not get `path_buf`")?;
-        create_module_file_from_anchor_label(chest.anchor().as_path(), chest.label().as_ref(), RegularStruct).context("create_struct error")?;
+        let config = Config::default();
+        create_module_file_from_anchor_label(chest.anchor().as_path(), chest.label().as_ref(), RegularStruct, &config).context("create_struct error")?;
         Ok(chest)
     }
 

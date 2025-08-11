@@ -38,23 +38,23 @@ pub enum ModuleTemplate {
 }
 
 impl ModuleTemplate {
-    pub fn function(&self) -> impl FnOnce(Ident) -> TokenStream {
+    pub fn function<'a>(&self, config: &'a Config) -> Box<dyn FnOnce(Ident) -> TokenStream + 'a> {
         match self {
-            Empty => get_empty_module_token_stream,
-            RegularStruct => get_regular_struct_token_stream,
-            UnitStruct => get_unit_struct_token_stream,
-            NewtypeStruct => get_newtype_wrapper_struct_token_stream,
-            SubtypeStruct => get_subtype_struct_token_stream,
-            SigilStruct => get_sigil_struct_token_stream,
-            ClapStruct => get_clap_struct_token_stream,
-            ErrorStruct => get_error_struct_token_stream,
-            RegularEnum => get_regular_enum_token_stream,
-            PlainEnum => get_plain_enum_token_stream,
-            ClapEnum => get_clap_enum_token_stream,
-            ErrorEnum => get_error_enum_token_stream,
-            TypeAlias => get_type_alias_token_stream,
-            Trait => get_trait_token_stream,
-            Fn => get_fn_token_stream,
+            Empty => Box::new(get_empty_module_token_stream),
+            RegularStruct => Box::new(move |ident| get_regular_struct_token_stream(ident, config)),
+            UnitStruct => Box::new(move |ident| get_unit_struct_token_stream(ident, config)),
+            NewtypeStruct => Box::new(get_newtype_wrapper_struct_token_stream),
+            SubtypeStruct => Box::new(get_subtype_struct_token_stream),
+            SigilStruct => Box::new(move |ident| get_sigil_struct_token_stream(ident, config)),
+            ClapStruct => Box::new(move |ident| get_clap_struct_token_stream(ident, config)),
+            ErrorStruct => Box::new(move |ident| get_error_struct_token_stream(ident, config)),
+            RegularEnum => Box::new(move |ident| get_regular_enum_token_stream(ident, config)),
+            PlainEnum => Box::new(move |ident| get_plain_enum_token_stream(ident, config)),
+            ClapEnum => Box::new(move |ident| get_clap_enum_token_stream(ident, config)),
+            ErrorEnum => Box::new(move |ident| get_error_enum_token_stream(ident, config)),
+            TypeAlias => Box::new(move |ident| get_type_alias_token_stream(ident, config)),
+            Trait => Box::new(move |ident| get_trait_token_stream(ident, config)),
+            Fn => Box::new(move |ident| get_fn_token_stream(ident, config)),
         }
     }
 
@@ -91,6 +91,8 @@ impl ModuleTemplate {
 
 impl ToModuleTokenStream for ModuleTemplate {
     fn to_module_token_stream(&self, ident: Ident) -> TokenStream {
-        self.function()(ident)
+        // Use default config for compatibility with existing ToModuleTokenStream trait
+        let config = Config::default();
+        self.function(&config)(ident)
     }
 }

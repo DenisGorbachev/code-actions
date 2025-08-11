@@ -109,7 +109,7 @@ impl Config {
     ///
     /// Returns all matching derive macros from configuration rules that match the type name,
     /// with duplicates removed while preserving order.
-    pub fn get_extra_derives_for_name(&self, type_name: &str) -> Vec<String> {
+    pub fn get_extra_derives_for_name(&self, type_name: &impl AsRef<str>) -> Vec<String> {
         self.collect_matching_items(type_name, |extra| &extra.derive)
     }
 
@@ -117,7 +117,7 @@ impl Config {
     ///
     /// Returns all matching use statements from configuration rules that match the type name,
     /// with duplicates removed while preserving order.
-    pub fn get_extra_use_statements_for_name(&self, type_name: &str) -> Vec<String> {
+    pub fn get_extra_use_statements_for_name(&self, type_name: &impl AsRef<str>) -> Vec<String> {
         self.collect_matching_items(type_name, |extra| &extra.r#use)
     }
 
@@ -134,7 +134,6 @@ impl Config {
     /// Validate configuration rules
     fn validate(&self) -> Result<(), ConfigMatchesEmptyError> {
         for extra in &self.extra {
-            // Check for empty patterns
             if extra.matches.is_empty() {
                 return Err(ConfigMatchesEmptyError::new());
             }
@@ -142,7 +141,7 @@ impl Config {
         Ok(())
     }
 
-    fn collect_matching_items<F>(&self, type_name: &str, getter: F) -> Vec<String>
+    fn collect_matching_items<F>(&self, type_name: &impl AsRef<str>, getter: F) -> Vec<String>
     where
         F: Fn(&ExtraConfig) -> &[String],
     {
@@ -153,7 +152,7 @@ impl Config {
                 extra
                     .regex
                     .as_ref()
-                    .filter(|regex| regex.is_match(type_name))
+                    .filter(|regex| regex.is_match(type_name.as_ref()))
                     .map(|_| getter(extra))
             })
             .flat_map(|items| items.iter().cloned())
@@ -223,21 +222,21 @@ use = ["std::fmt"]
         assert!(!config.extra.is_empty());
 
         // Test that patterns work correctly
-        let error_derives = config.get_extra_derives_for_name("MyError");
+        let error_derives = config.get_extra_derives_for_name(&"MyError");
         assert!(error_derives.contains(&"Clone".to_string()));
         assert!(error_derives.contains(&"Debug".to_string()));
         assert!(error_derives.contains(&"PartialEq".to_string())); // From nested config
 
-        let user_derives = config.get_extra_derives_for_name("UserStruct");
+        let user_derives = config.get_extra_derives_for_name(&"UserStruct");
         assert!(user_derives.contains(&"Serialize".to_string()));
         assert!(user_derives.contains(&"Deserialize".to_string()));
         assert!(user_derives.contains(&"Debug".to_string())); // From wildcard pattern
 
         // Test extra use statements
-        let error_uses = config.get_extra_use_statements_for_name("MyError");
+        let error_uses = config.get_extra_use_statements_for_name(&"MyError");
         assert!(error_uses.contains(&"serde::{Serialize, Deserialize}".to_string()));
 
-        let user_uses = config.get_extra_use_statements_for_name("UserStruct");
+        let user_uses = config.get_extra_use_statements_for_name(&"UserStruct");
         assert!(user_uses.contains(&"std::fmt".to_string()));
     }
 
@@ -247,14 +246,15 @@ use = ["std::fmt"]
         use quote::format_ident;
 
         // Create a sample config
-        let config = Config {
+        let mut config = Config {
             extra: vec![ExtraConfig {
                 matches: "UserStruct".to_string(),
                 derive: vec!["Serialize".to_string(), "Deserialize".to_string()],
                 r#use: vec!["serde::{Serialize, Deserialize}".to_string()],
-                regex: Some(Regex::new("UserStruct").unwrap()),
+                regex: None,
             }],
         };
+        config.compile_regex_patterns().unwrap();
 
         let struct_name = format_ident!("UserStruct");
         let token_stream = get_regular_struct_token_stream_with_config(struct_name, &config, "UserStruct");
@@ -293,30 +293,28 @@ use = ["std::fmt"]
                 },
             ],
         };
-
-        // Compile regex patterns
         config.compile_regex_patterns().unwrap();
 
         // Test User.* pattern
-        let user_derives = config.get_extra_derives_for_name("UserStruct");
+        let user_derives = config.get_extra_derives_for_name(&"UserStruct");
         assert!(user_derives.contains(&"Serialize".to_string()));
         assert!(user_derives.contains(&"Debug".to_string())); // From wildcard
-        let user_uses = config.get_extra_use_statements_for_name("UserStruct");
+        let user_uses = config.get_extra_use_statements_for_name(&"UserStruct");
         assert!(user_uses.contains(&"serde::Serialize".to_string()));
 
         // Test .*Error$ pattern
-        let error_derives = config.get_extra_derives_for_name("MyError");
+        let error_derives = config.get_extra_derives_for_name(&"MyError");
         assert!(error_derives.contains(&"Error".to_string()));
         assert!(error_derives.contains(&"Debug".to_string())); // From wildcard
 
         // Test that UserError matches both patterns
-        let user_error_derives = config.get_extra_derives_for_name("UserError");
+        let user_error_derives = config.get_extra_derives_for_name(&"UserError");
         assert!(user_error_derives.contains(&"Serialize".to_string())); // From User.*
         assert!(user_error_derives.contains(&"Error".to_string())); // From .*Error$
         assert!(user_error_derives.contains(&"Debug".to_string())); // From wildcard
 
         // Test non-matching name
-        let other_derives = config.get_extra_derives_for_name("SomeStruct");
+        let other_derives = config.get_extra_derives_for_name(&"SomeStruct");
         assert!(!other_derives.contains(&"Serialize".to_string()));
         assert!(!other_derives.contains(&"Error".to_string()));
         assert!(other_derives.contains(&"Debug".to_string())); // From wildcard only

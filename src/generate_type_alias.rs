@@ -1,3 +1,4 @@
+use crate::functions::code_generation_helpers::create_use_statements;
 use crate::types::config::Config;
 use fs_err::File;
 use proc_macro2::{Ident, TokenStream};
@@ -26,18 +27,18 @@ pub fn get_type_alias_file_contents(path: &Utf8Path) -> Outcome<String> {
     let stem = FileStem::try_from(path)?;
     let type_name = TypeName::from(*stem);
     let name = format_ident!("{}", &type_name);
-    let content = get_type_alias_token_stream(name);
+    let config = Config::try_from(path.as_std_path())?;
+    let content = get_type_alias_token_stream(name, &config);
     Ok(format_token_stream_prettyplease(content)?)
 }
 
-pub fn get_type_alias_token_stream(name: Ident) -> TokenStream {
-    let config = Config::default();
+pub fn get_type_alias_token_stream(name: Ident, config: &Config) -> TokenStream {
     let type_name = name.to_string();
-    get_type_alias_token_stream_with_config(name, &config, &type_name)
+    get_type_alias_token_stream_with_config(name, config, &type_name)
 }
 
 pub fn get_type_alias_token_stream_with_config(name: Ident, config: &Config, type_name: &str) -> TokenStream {
-    let extra_uses = config.get_extra_use_statements_for_name(type_name);
+    let extra_uses = config.get_extra_use_statements_for_name(&type_name);
     let extra_use_statements = create_use_statements(&extra_uses);
 
     quote! {
@@ -45,20 +46,4 @@ pub fn get_type_alias_token_stream_with_config(name: Ident, config: &Config, typ
 
         pub type #name = ();
     }
-}
-
-fn create_use_statements(use_statements: &[String]) -> TokenStream {
-    if use_statements.is_empty() {
-        return quote! {};
-    }
-
-    let mut tokens = TokenStream::new();
-    for use_stmt in use_statements {
-        let use_tokens = use_stmt
-            .parse::<TokenStream>()
-            .unwrap_or_else(|_| quote! { compile_error!(concat!("Invalid use statement: ", #use_stmt)); });
-        tokens.extend(quote! { use #use_tokens; });
-    }
-
-    tokens
 }

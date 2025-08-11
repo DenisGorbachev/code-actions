@@ -25,7 +25,7 @@ cargo add code-actions
 ```shell
 Utilities for writing Rust code quickly
 
-Usage: code-actions <COMMAND>
+Usage: code-actions [OPTIONS] <COMMAND>
 
 Commands:
   add-dependency                   
@@ -43,8 +43,9 @@ Commands:
   help                             Print this message or the help of the given subcommand(s)
 
 Options:
-  -h, --help     Print help
-  -V, --version  Print version
+      --config <CONFIG>  Path to the configuration file or directory to search for config
+  -h, --help             Print help
+  -V, --version          Print version
 ```
 
 ## Gratitude
