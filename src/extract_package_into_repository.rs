@@ -3,7 +3,7 @@ use crate::types::outcome::Outcome;
 use anyhow::Context;
 use derive_more::Error;
 use std::io;
-use xshell::{cmd, Cmd, Shell};
+use xshell::{Cmd, Shell, cmd};
 
 pub fn extract_package_into_repository(sh: Shell, source: Utf8PathBuf, target: Utf8PathBuf) -> Outcome {
     let source_src = source.join("src");
@@ -38,11 +38,7 @@ pub fn extract_package_into_repository(sh: Shell, source: Utf8PathBuf, target: U
 
 pub fn confirm_run<T: Default, ConfirmErr, RunErr>(cmd: Cmd, confirm: impl FnOnce(&str) -> Result<bool, ConfirmErr>, run: impl FnOnce(Cmd) -> Result<T, RunErr>) -> Result<T, ConfirmRunError<ConfirmErr, RunErr>> {
     let should_run = confirm(&cmd.to_string()).map_err(ConfirmRunError::Confirm)?;
-    if should_run {
-        run(cmd).map_err(ConfirmRunError::Run)
-    } else {
-        Ok(T::default())
-    }
+    if should_run { run(cmd).map_err(ConfirmRunError::Run) } else { Ok(T::default()) }
 }
 
 use crate::traits::cargo_info::CargoInfo;

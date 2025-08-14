@@ -8,7 +8,7 @@ use anyhow::Context;
 use heck::ToSnakeCase;
 use prettyplease::unparse;
 use proc_macro2::Ident;
-use syn_more::{maybe_ident_for_item, parse_main_item_from_path, SynFrom};
+use syn_more::{SynFrom, maybe_ident_for_item, parse_main_item_from_path};
 
 /// This function simply renames the file and the `mod` declaration in the parent module. It doesn't rename all references.
 // TODO: Ensure that every reference is renamed, too (can only do that with rust-analyzer)

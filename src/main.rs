@@ -1,4 +1,4 @@
-use clap::{value_parser, Parser, Subcommand};
+use clap::{Parser, Subcommand, value_parser};
 use code_actions::types::module_template::ModuleTemplate;
 use code_actions::types::outcome::Outcome;
 use stub_macro::stub;

@@ -88,10 +88,10 @@ pub enum SynFileRenameModuleError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use SynFileRenameModuleError::*;
     use pretty_assertions::assert_eq;
     use prettyplease::unparse;
     use syn::parse_file;
-    use SynFileRenameModuleError::*;
 
     const INPUT: &str = "
 mod foo;

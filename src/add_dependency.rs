@@ -43,11 +43,7 @@ pub fn local_package_root(anchor: &Utf8Path, crate_name: &str) -> Outcome<Utf8Pa
 }
 
 fn insert_if_not_contains(item: &mut Table, key: &str, value: Item) -> Option<Item> {
-    if item.contains_key(key) {
-        None
-    } else {
-        item.insert(key, value)
-    }
+    if item.contains_key(key) { None } else { item.insert(key, value) }
 }
 
 // pub fn add_workspace_and_package_dependency_from_spec(anchor: &Utf8Path, crate_spec: &str, optional: bool) -> Outcome {
@@ -96,11 +92,7 @@ pub fn add_global_dependency_from_crate_name_crate_version(anchor: &Utf8Path, cr
 }
 
 pub fn bool_to_opt(value: bool) -> Option<bool> {
-    if value {
-        Some(true)
-    } else {
-        None
-    }
+    if value { Some(true) } else { None }
 }
 
 pub fn add_local_dependency_for_package_from_name(anchor: &Utf8Path, crate_name: &str) -> Outcome {

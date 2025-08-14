@@ -1,4 +1,4 @@
-use fs_err::{create_dir, File};
+use fs_err::{File, create_dir};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 

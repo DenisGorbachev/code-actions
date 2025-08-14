@@ -1,6 +1,6 @@
+use time::OffsetDateTime;
 use time::error::Format;
 use time::macros::format_description;
-use time::OffsetDateTime;
 
 pub fn get_freewrite_file_stem(now: OffsetDateTime) -> Result<String, Format> {
     now.format(format_description!("freewrite_[year]_[month]_[day]"))

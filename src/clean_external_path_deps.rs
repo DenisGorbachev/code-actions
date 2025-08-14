@@ -57,11 +57,7 @@ pub fn remove_entries_by_pattern(pattern: &str, yes: bool) -> Outcome<()> {
             entry.map(|path_buf| {
                 if yes {
                     eprintln!("Removing {}", path_buf.display());
-                    if path_buf.is_dir() {
-                        fs::remove_dir_all(path_buf)
-                    } else {
-                        fs::remove_file(path_buf)
-                    }
+                    if path_buf.is_dir() { fs::remove_dir_all(path_buf) } else { fs::remove_file(path_buf) }
                 } else {
                     eprintln!("Would remove (use --yes to remove) {}", path_buf.display());
                     Ok(())

@@ -9,11 +9,11 @@ use fs_err::File;
 use heck::ToSnakeCase;
 use itertools::Itertools;
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
 use standard_traits::{Get, Of};
 use syn::punctuated::Punctuated;
 use syn::token::For;
-use syn::{parse_str, AngleBracketedGenericArguments, ConstParam, Expr, ExprLit, GenericArgument, GenericParam, Generics, Item, ItemImpl, ItemUse, Lit, Path, PathArguments, PathSegment, Token, Type, TypeParam, TypePath, UseName, UsePath, UseTree};
+use syn::{AngleBracketedGenericArguments, ConstParam, Expr, ExprLit, GenericArgument, GenericParam, Generics, Item, ItemImpl, ItemUse, Lit, Path, PathArguments, PathSegment, Token, Type, TypeParam, TypePath, UseName, UsePath, UseTree, parse_str};
 use syn_more::default_item_impl;
 use syn_more::default_type_path;
 use syn_more::get_generics_from_params;
@@ -256,7 +256,7 @@ pub struct UnsupportedItemError {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use syn::{parse_quote, ItemImpl, ItemStruct};
+    use syn::{ItemImpl, ItemStruct, parse_quote};
 
     use super::*;
 

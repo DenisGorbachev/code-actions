@@ -88,7 +88,7 @@ mod tests {
     use quote::ToTokens;
     use standard_traits::Get;
     use std::fs;
-    use syn::{parse_quote, File, Item, ItemStruct};
+    use syn::{File, Item, ItemStruct, parse_quote};
 
     // #[derive(Eq, PartialEq, Copy, Clone, Debug)]
     // pub struct ProjectDirectory(std::path::PathBuf);

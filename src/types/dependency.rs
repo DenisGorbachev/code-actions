@@ -55,11 +55,7 @@ impl From<Dependency> for InlineTable {
 }
 
 pub fn workspace_first(a_key: &Key, _a_value: &Value, _b_key: &Key, _b_value: &Value) -> Ordering {
-    if a_key == "workspace" {
-        Ordering::Less
-    } else {
-        Ordering::Equal
-    }
+    if a_key == "workspace" { Ordering::Less } else { Ordering::Equal }
 }
 
 impl IsInternal for Dependency {

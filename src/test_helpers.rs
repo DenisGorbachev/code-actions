@@ -1,5 +1,5 @@
 use crate::constants::{CARGO_TOML_FILE_NAME, LIB_FILE_NAME, MAIN_FILE_NAME, SRC_DIR_NAME};
-use crate::extensions::std::fs::{create_file_all, CreateFileAllError};
+use crate::extensions::std::fs::{CreateFileAllError, create_file_all};
 use crate::extensions::tempfile::temp_dir::TempDir;
 use crate::types::outcome::Outcome;
 use anyhow::Context;

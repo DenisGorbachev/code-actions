@@ -9,7 +9,7 @@ use regex::Regex;
 use std::borrow::Cow;
 use std::fs::read_to_string;
 use std::path::Path;
-use syn::{parse_file, File, Item, ItemMod, ItemUse, UseGlob, UsePath, UseTree};
+use syn::{File, Item, ItemMod, ItemUse, UseGlob, UsePath, UseTree, parse_file};
 use syn_more::new_item_use;
 use walkdir::{DirEntry, WalkDir};
 

@@ -1,5 +1,5 @@
-use cargo_metadata::diagnostic::Diagnostic;
 use cargo_metadata::CompilerMessage;
+use cargo_metadata::diagnostic::Diagnostic;
 use proc_macro2::{Ident, Span, TokenTree};
 use regex::Regex;
 use syn::Meta;

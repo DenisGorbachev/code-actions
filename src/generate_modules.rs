@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::Path;
 
 use anyhow::Context;
-use fs_err::{create_dir_all, File, OpenOptions};
+use fs_err::{File, OpenOptions, create_dir_all};
 
 use crate::types::outcome::Outcome;
 
