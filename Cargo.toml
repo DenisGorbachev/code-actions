@@ -1,7 +1,7 @@
 [package]
 name = "code-actions"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 description = "A collection of code editing tools for Rust"
 homepage = "https://github.com/DenisGorbachev/code-actions"
 repository = "https://github.com/DenisGorbachev/code-actions"
