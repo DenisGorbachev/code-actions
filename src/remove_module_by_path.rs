@@ -63,22 +63,28 @@ fn remove_mod_line_from_parent(parent_module_file: &Utf8Path, file_stem: &str) -
 }
 
 pub fn is_filtered(line: &str, str: &str) -> bool {
-    is_mod_or_use(line) && line.contains(str)
+    let is_filtered_mod = is_mod(line) && line.trim_end_matches(";").ends_with(str);
+    let is_filtered_use = is_use(line)
+        && line
+            .trim_end_matches(";")
+            .trim_end_matches("::*")
+            .ends_with(str);
+    is_filtered_mod || is_filtered_use
 }
 
-pub fn is_mod_or_use(line: &str) -> bool {
-    pub const KEYWORDS: [&str; 2] = ["mod", "use"];
-    for keyword in KEYWORDS {
-        if line
-            .trim() // trim optional whitespace
-            .trim_start_matches("pub")
-            .trim() // trim optional whitespace
-            .trim_start_matches("(crate)")
-            .trim() // trim optional whitespace
-            .starts_with(keyword)
-        {
-            return true;
-        }
-    }
-    false
+pub fn is_mod(line: &str) -> bool {
+    starts_with_trimmed(line, "mod")
+}
+
+pub fn is_use(line: &str) -> bool {
+    starts_with_trimmed(line, "use")
+}
+
+pub fn starts_with_trimmed(line: &str, start: &str) -> bool {
+    line.trim() // trim optional whitespace
+        .trim_start_matches("pub")
+        .trim() // trim optional whitespace
+        .trim_start_matches("(crate)")
+        .trim() // trim optional whitespace
+        .starts_with(start)
 }
