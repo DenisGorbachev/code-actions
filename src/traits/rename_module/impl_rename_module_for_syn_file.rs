@@ -24,11 +24,10 @@ impl RenameModule for &mut syn::File {
         for item in &mut self.items {
             match item {
                 // Handle module declarations
-                syn::Item::Mod(module) => {
-                    if module.ident == module_name_old {
+                syn::Item::Mod(module)
+                    if module.ident == module_name_old => {
                         module.ident = syn::Ident::new(module_name_new, module.ident.span());
                     }
-                }
                 // Handle use statements
                 syn::Item::Use(use_item) => {
                     *use_item = rename_use_paths(use_item, module_name_old, module_name_new);
