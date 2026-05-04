@@ -42,3 +42,4 @@ mod add_blank_lines;
 mod assertions;
 pub mod extract_package_into_repository;
 pub mod fix_impossible_derives;
+pub mod generate_command_struct;

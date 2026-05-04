@@ -42,22 +42,6 @@ pub fn get_sigil_struct_token_stream(name: Ident) -> TokenStream {
     get_unit_struct_token_stream(name)
 }
 
-pub fn get_clap_struct_token_stream(name: Ident) -> TokenStream {
-    quote! {
-        use std::io::Write;
-        use clap::Parser;
-
-        #[derive(Parser, Clone, Debug)]
-        pub struct #name {}
-
-        impl #name {
-            pub async fn run(self, stdout: &mut impl Write, stderr: &mut impl Write) -> Result<(), ()> {
-                todo!()
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use anyhow::Context;
@@ -78,9 +62,7 @@ mod tests {
     use crate::test_helpers::get_src_path;
     use crate::types::anchor::Anchor;
     use crate::types::label::Label;
-    use crate::types::module_template::ModuleTemplate;
-
-    use ModuleTemplate::*;
+    use crate::types::module_template::ModuleTemplate::*;
 
     #[test]
     fn test_existing_struct_path() -> Outcome {
