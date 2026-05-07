@@ -55,7 +55,7 @@ pub fn generate_modules(path: &Utf8Path) -> Outcome {
 pub fn create_dir_all_for_file(path: &Utf8Path) -> Outcome {
     let parent = path
         .parent()
-        .with_context(|| format!("Could not get parent from path: {}", &path))?;
+        .with_context(|| format!("Could not get parent from path: '{path}'"))?;
     create_dir_all(parent)?;
     Ok(())
 }
