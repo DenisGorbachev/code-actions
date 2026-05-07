@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::Path;
 
 use anyhow::Context;
-use fs_err::{File, OpenOptions, create_dir_all};
+use fs_err::{create_dir_all, File, OpenOptions};
 
 use crate::types::outcome::Outcome;
 
@@ -37,7 +37,7 @@ pub fn generate_modules(path: &Utf8Path) -> Outcome {
 
         module_file
             .append_if_not_contains(&module_declarations)
-            .with_context(|| format!("Could not append module declaration to file: '{}'", &module_file_path))?;
+            .with_context(|| format!("Could not append module declaration to file: '{}'", module_file_path))?;
 
         child = parent;
     }
@@ -47,7 +47,7 @@ pub fn generate_modules(path: &Utf8Path) -> Outcome {
     let module_declarations = get_module_declarations(&mut primary_module_file, child)?;
     primary_module_file
         .append_if_not_contains(&module_declarations)
-        .with_context(|| format!("Could not append module declaration to file: '{}'", &primary_module_file_path.display()))?;
+        .with_context(|| format!("Could not append module declaration to file: '{}'", primary_module_file_path.display()))?;
 
     Ok(())
 }
