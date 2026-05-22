@@ -6,6 +6,7 @@ pub mod get_impl_file_contents;
 pub mod get_latest_crate_version;
 pub mod get_table_from_item;
 pub mod get_the_only_key;
+pub mod init_tracing_subscriber;
 pub mod label;
 pub mod modify_rust_file;
 pub mod parent_candidates;

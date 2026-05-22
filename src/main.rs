@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand, value_parser};
+use code_actions::functions::init_tracing_subscriber::init_tracing_subscriber;
 use code_actions::types::module_template::ModuleTemplate;
 use code_actions::types::outcome::Outcome;
 use stub_macro::stub;
@@ -337,21 +338,4 @@ fn main() -> Outcome {
     // TODO: Use [Mason](https://pub.dev/packages/mason_cli) to generate files from templates
     init_tracing_subscriber();
     Cli::parse().run()
-}
-
-pub fn init_tracing_subscriber() {
-    use tracing::level_filters::LevelFilter;
-    use tracing_error::ErrorLayer;
-    use tracing_subscriber::layer::SubscriberExt;
-    use tracing_subscriber::util::SubscriberInitExt;
-    let env_filter = tracing_subscriber::EnvFilter::builder()
-        .with_default_directive(LevelFilter::INFO.into())
-        .from_env_lossy();
-    let subscriber = tracing_subscriber::fmt()
-        .with_env_filter(env_filter)
-        // .with_max_level(tracing::Level::TRACE) // Set the maximum log level to TRACE
-        .finish()
-        .with(ErrorLayer::default());
-    // dbg!(&subscriber);
-    subscriber.init();
 }

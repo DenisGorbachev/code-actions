@@ -4,7 +4,11 @@
 
 # Rust Code Actions
 
+[![Build](https://github.com/DenisGorbachev/code-actions/actions/workflows/ci.yml/badge.svg)](https://github.com/DenisGorbachev/code-actions)
 
+<!-- crate documentation start -->
+
+<!-- crate documentation end -->
 
 ## Installation
 

@@ -9,6 +9,22 @@ repository = "https://github.com/DenisGorbachev/code-actions"
 readme = "README.md"
 keywords = []
 categories = []
+exclude = [
+    ".*",
+    "*.local.*",
+    "doc/dev",
+    "specs",
+    "README.ts",
+    "AGENTS*.md",
+    "CLAUDE*.md",
+    "deno.json",
+    "commitlint.config.mjs",
+    "lefthook.yml",
+    "mise.toml",
+    "rumdl.toml",
+    "rustfmt.toml",
+    ".yolobox"
+]
 
 [package.metadata.details]
 title = "Rust Code Actions"
@@ -19,7 +35,6 @@ announcement = ""
 [dependencies]
 #tokio = { version = "1.39.2", features = ["macros", "fs", "net", "rt", "rt-multi-thread"] }
 anyhow = { version = "1.0.95" }
-assert_matches = { version = "1.5.0" }
 camino = { version = "1.1.9" }
 cargo_metadata = { version = "0.19.1" }
 cargo_toml = { version = "0.21.0" }
@@ -35,12 +50,9 @@ fmt-derive = "0.1.2"
 fs-err = { version = "3.1.0" }
 glob = { version = "0.3.2" }
 heck = { version = "0.5.0" }
-helpful = { git = "https://github.com/DenisGorbachev/helpful" }
-indoc = { version = "2.0.5" }
 itertools = { version = "0.14.0" }
 lazy_static = { version = "1.5.0" }
 not-found-error = { version = "0.2.3" }
-pretty_assertions = { version = "1.4.1" }
 prettyplease = { version = "0.2.29" }
 proc-macro2 = { version = "1.0.93" }
 quote = { version = "1.0.38" }
@@ -63,5 +75,10 @@ tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 walkdir = { version = "2.5.0" }
 xshell = { version = "0.3.0-pre.2" }
 
+[dev-dependencies]
+assert_matches = { version = "1.5.0" }
+indoc = { version = "2.0.5" }
+pretty_assertions = { version = "1.4.1" }
+
 [package.metadata.cargo-machete]
-ignored = ["stub-macro", "helpful"]
+ignored = ["stub-macro"]
