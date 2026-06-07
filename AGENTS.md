@@ -682,8 +682,8 @@ ignored = ["stub-macro"]
 if_missing = "error"
 
 [providers]
-keychain = { type = "keychain", service = "rust-pre-public-lib-template" }
-pass = { type = "password-store", prefix = "rust-pre-public-lib-template/" }
+keychain = { type = "keychain", service = "code-actions" }
+pass = { type = "password-store", prefix = "code-actions/" }
 ```
 
 ### src/main.rs
