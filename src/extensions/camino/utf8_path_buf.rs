@@ -2,6 +2,7 @@ use std::borrow::Borrow;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
+use camino::Utf8PathBuf as CaminoUtf8PathBuf;
 use derive_more::{Deref, DerefMut, Display};
 use derive_new::new;
 
@@ -19,7 +20,7 @@ pub mod try_from_path_buf;
 #[derive(new, Deref, DerefMut, Display, Default, Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 #[repr(transparent)]
-pub struct Utf8PathBuf(pub camino::Utf8PathBuf);
+pub struct Utf8PathBuf(pub CaminoUtf8PathBuf);
 
 impl Utf8PathBuf {
     pub fn as_path(&self) -> &Utf8Path {
@@ -68,10 +69,10 @@ impl From<Utf8PathBuf> for PathBuf {
 }
 
 impl TryFrom<&Path> for Utf8PathBuf {
-    type Error = <camino::Utf8PathBuf as TryFrom<PathBuf>>::Error;
+    type Error = <CaminoUtf8PathBuf as TryFrom<PathBuf>>::Error;
 
     fn try_from(value: &Path) -> Result<Self, Self::Error> {
-        let inner = camino::Utf8PathBuf::try_from(value.to_path_buf())?;
+        let inner = CaminoUtf8PathBuf::try_from(value.to_path_buf())?;
         Ok(Self::from(inner))
     }
 }

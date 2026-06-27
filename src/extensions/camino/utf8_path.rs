@@ -3,7 +3,7 @@ use std::iter::Map;
 use std::path::Path;
 
 use anyhow::Context;
-use camino::Utf8Ancestors;
+use camino::{Utf8Ancestors, Utf8Path as CaminoUtf8Path};
 use derive_more::{Deref, Display};
 
 use crate::types::outcome::Outcome;
@@ -18,14 +18,14 @@ pub mod try_from_temp_dir;
 
 #[derive(Deref, Display, Ord, PartialOrd, Eq, PartialEq, Debug)]
 #[repr(transparent)]
-pub struct Utf8Path(camino::Utf8Path);
+pub struct Utf8Path(CaminoUtf8Path);
 
 impl Utf8Path {
     pub fn new(s: &(impl AsRef<str> + ?Sized)) -> &Self {
-        unsafe { &*(camino::Utf8Path::new(s) as *const camino::Utf8Path as *const Utf8Path) }
+        unsafe { &*(CaminoUtf8Path::new(s) as *const CaminoUtf8Path as *const Utf8Path) }
     }
 
-    pub fn ancestors(&self) -> Map<Utf8Ancestors<'_>, fn(&camino::Utf8Path) -> &Utf8Path> {
+    pub fn ancestors(&self) -> Map<Utf8Ancestors<'_>, fn(&CaminoUtf8Path) -> &Utf8Path> {
         self.0.ancestors().map(Utf8Path::new)
     }
 
@@ -71,11 +71,11 @@ impl Utf8Path {
 }
 
 pub fn get_utf8_path_ref_from_temp_dir(dir: &TempDir) -> Option<&Utf8Path> {
-    let camino_path = camino::Utf8Path::from_path(dir.path())?;
+    let camino_path = CaminoUtf8Path::from_path(dir.path())?;
     Some(Utf8Path::new(camino_path))
 }
 
-pub fn find_dir_containing_filename(path: &camino::Utf8Path, filename: impl AsRef<camino::Utf8Path>) -> Option<&camino::Utf8Path> {
+pub fn find_dir_containing_filename(path: &CaminoUtf8Path, filename: impl AsRef<CaminoUtf8Path>) -> Option<&CaminoUtf8Path> {
     let filename = filename.as_ref();
     path.ancestors().find(|it| it.join(filename).exists())
 }

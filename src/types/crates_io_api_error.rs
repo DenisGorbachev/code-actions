@@ -1,1 +1,3 @@
-pub type CratesIoApiError = crates_io_api::Error;
+use crates_io_api::Error;
+
+pub type CratesIoApiError = Error;

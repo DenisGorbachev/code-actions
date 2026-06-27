@@ -3,15 +3,15 @@ use crate::extensions::std::fs::{CreateFileAllError, create_file_all};
 use crate::extensions::tempfile::temp_dir::TempDir;
 use crate::types::outcome::Outcome;
 use anyhow::Context;
-use cargo_toml::{Inheritable, Resolver};
+use cargo_toml::{Inheritable, Manifest as CargoTomlManifest, Package as CargoTomlPackage, Resolver, Workspace as CargoTomlWorkspace};
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 
-type Manifest = cargo_toml::Manifest<()>;
-type Package = cargo_toml::Package<()>;
-type Workspace = cargo_toml::Workspace<()>;
+type Manifest = CargoTomlManifest<()>;
+type Package = CargoTomlPackage<()>;
+type Workspace = CargoTomlWorkspace<()>;
 
 const WORKSPACE: &str = "foo_workspace";
 const PACKAGE: &str = "bar_package";

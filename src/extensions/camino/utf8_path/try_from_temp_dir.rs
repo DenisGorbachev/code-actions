@@ -1,3 +1,4 @@
+use camino::Utf8Path as CaminoUtf8Path;
 use std::path::PathBuf;
 
 use derive_more::Error;
@@ -16,7 +17,7 @@ impl<'a> TryFrom<&'a TempDir> for &'a Utf8Path {
     type Error = TryFromTempDirError;
 
     fn try_from(value: &'a TempDir) -> Result<Self, Self::Error> {
-        camino::Utf8Path::from_path(value.path())
+        CaminoUtf8Path::from_path(value.path())
             .map(Utf8Path::new)
             .ok_or_else(|| TryFromTempDirError::new(value.as_ref().to_path_buf()))
     }

@@ -5,9 +5,11 @@ use crate::functions::parent_candidates::parent_candidates;
 use crate::traits::rename_module::RenameModule;
 use crate::types::outcome::Outcome;
 use anyhow::Context;
+use fs_err::{rename, write};
 use heck::ToSnakeCase;
 use prettyplease::unparse;
 use proc_macro2::Ident;
+use syn::File;
 use syn_more::{SynFrom, maybe_ident_for_item, parse_main_item_from_path};
 
 /// This function simply renames the file and the `mod` declaration in the parent module. It doesn't rename all references.
@@ -24,11 +26,11 @@ pub fn fix_name(path: &Utf8Path) -> Outcome {
             .file_stem()
             .expect("module path should have a file stem");
         let parent = parent_candidates(path, src.as_path()).next();
-        fs_err::rename(path, path_new)?;
+        rename(path, path_new)?;
         if let Some(parent) = parent {
-            let mut file = syn::File::syn_from(parent.as_path().as_std_path())?;
+            let mut file = File::syn_from(parent.as_path().as_std_path())?;
             file.rename_module(module_name_old, &module_name_new)?;
-            fs_err::write(parent.as_path(), unparse(&file))?;
+            write(parent.as_path(), unparse(&file))?;
         }
     }
     Ok(())

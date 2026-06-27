@@ -1,3 +1,4 @@
+use camino::Utf8Path as CaminoUtf8Path;
 use clap::{Parser, Subcommand, value_parser};
 use code_actions::functions::init_tracing_subscriber::init_tracing_subscriber;
 use code_actions::types::module_template::ModuleTemplate;
@@ -163,7 +164,7 @@ impl Cli {
                         suffix,
                     } => {
                         let suffix = suffix.unwrap_or_default();
-                        let path = Utf8Path::new(camino::Utf8Path::new(&parent));
+                        let path = Utf8Path::new(CaminoUtf8Path::new(&parent));
                         let filename = get_relative_path_anchor_subdir_name_suffix(path, &subdir, &stem, &suffix)?;
                         println!("{filename}");
                         Ok(())

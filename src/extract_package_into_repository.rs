@@ -2,6 +2,7 @@ use crate::extensions::camino::utf8_path_buf::Utf8PathBuf;
 use crate::types::outcome::Outcome;
 use anyhow::Context;
 use derive_more::Error;
+use dialoguer::Error as DialoguerError;
 use std::io;
 use xshell::{Cmd, Shell, cmd};
 
@@ -60,8 +61,8 @@ pub enum ConfirmRunError<ConfirmErr, RunErr> {
     Run(RunErr),
 }
 
-pub fn to_io_error(error: dialoguer::Error) -> io::Error {
+pub fn to_io_error(error: DialoguerError) -> io::Error {
     match error {
-        dialoguer::Error::IO(out) => out,
+        DialoguerError::IO(out) => out,
     }
 }

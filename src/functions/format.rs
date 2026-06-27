@@ -6,6 +6,7 @@ use proc_macro2::TokenStream;
 use std::io;
 use std::path::Path;
 use std::process::Output;
+use syn::{Result as SynResult, parse_file};
 
 /// Formats the file at `path` with `rustfmt`
 #[deprecated(note = "`format_cargo_fmt` is better because it invokes rustfmt with a Rust edition specified in Cargo.toml")]
@@ -28,9 +29,9 @@ pub fn format_token_stream_rustfmt(tokens: TokenStream) -> io::Result<Output> {
     cmd!("rustfmt").stdin_bytes(tokens.to_string()).run()
 }
 
-pub fn format_token_stream_prettyplease(tokens: TokenStream) -> syn::Result<String> {
+pub fn format_token_stream_prettyplease(tokens: TokenStream) -> SynResult<String> {
     // NOTE: using parse_file instead of parse2 because tokens may contain multiple Items
-    let file = syn::parse_file(&tokens.to_string())?;
+    let file = parse_file(&tokens.to_string())?;
     let string = unparse(&file).replace("#[newline]", "");
     Ok(string)
 }

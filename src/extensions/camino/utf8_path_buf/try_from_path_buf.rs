@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use camino::Utf8PathBuf as CaminoUtf8PathBuf;
 use derive_more::Error;
 use fmt_derive::Display;
 
@@ -12,7 +13,7 @@ impl TryFrom<PathBuf> for Utf8PathBuf {
     type Error = TryFromPathBufError;
 
     fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
-        camino::Utf8PathBuf::from_path_buf(value)
+        CaminoUtf8PathBuf::from_path_buf(value)
             .map(Utf8PathBuf)
             .map_err(|_| TryFromPathBufError)
     }

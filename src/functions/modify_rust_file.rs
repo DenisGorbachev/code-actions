@@ -3,11 +3,11 @@ use crate::functions::format::format_cargo_fmt;
 use crate::types::outcome::Outcome;
 use prettyplease::unparse;
 use std::path::Path;
-use syn::parse_file;
+use syn::{File, parse_file};
 
 pub fn modify_rust_file<Modify>(path: impl AsRef<Path>, modify: Modify) -> Outcome
 where
-    Modify: FnOnce(syn::File) -> Outcome<syn::File>,
+    Modify: FnOnce(File) -> Outcome<File>,
 {
     // TODO: This function does not preserve regular comments starting with "//"
     modify_file_contents(path, |string| -> Outcome<String> {
@@ -19,7 +19,7 @@ where
 
 pub fn modify_and_format_rust_file<Modify>(path: impl AsRef<Path>, manifest_path: impl AsRef<Path>, modify: Modify) -> Outcome
 where
-    Modify: FnOnce(syn::File) -> Outcome<syn::File>,
+    Modify: FnOnce(File) -> Outcome<File>,
 {
     // TODO: This function does not preserve regular comments starting with "//" (use a parser from rust-analyzer instead of syn?)
     // TODO: Return an error if the file contains "//"

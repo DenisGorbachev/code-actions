@@ -476,6 +476,8 @@ You are running in a sandbox with limited network access.
 
 ## Guidelines for `serde`
 
+### Requirements
+
 * Every input data type must derive `Serialize` and `Deserialize`
 * Every `Option`-wrapped field must have attributes:
   * `#[serde(skip_serializing_if = "Option::is_none")]`
@@ -488,9 +490,21 @@ You are running in a sandbox with limited network access.
   * `unit` must be a string that contains the unit name in singular form (for example: "nanosecond", "second", "minute", "kilogram", "meter")
     * `unit` may contain a prefix (for example: "nano", "kilo")
 
+### Notes
+
+* It is recommended to use `serde_with` to reduce the code size by avoiding custom `Serialize`/`Deserialize` impls
+
 ## Guidelines for `subtype`
 
 * The macro calls that begin with `subtype` (for example, `subtype!` and `subtype_string!`) expand to newtypes.
+
+## Guidelines for `clap`
+
+### Requirements
+
+* For each enum in project:
+  * If enum has only unit variants and doesn't implement `Error`
+    * Then: it must derive `ValueEnum` with `#[value(rename_all = "kebab-case")]`
 
 ## CLI guidelines
 
@@ -587,6 +601,8 @@ A struct that contains fields for CLI arguments.
 * Must have a name that is a concatenation of all command names leading up to and including this command name, and ends with `Command` (see example above)
 * Must derive `clap::Parser`
 * Must be attached to a parent module: if it's a top-level command: `src/lib.rs`, else: `src/command.rs`
+* For each field:
+  * If the field has a collection type (e.g. `Vec`), then it must have attribute `num_args = 1..`
 * May contain a `subcommand` field annotated with `#[command(subcommand)]`
 * Must have a `pub async fn run`
   * Must return a `Result` with `ExitCode`
@@ -739,6 +755,7 @@ pass = { type = "password-store", prefix = "code-actions/" }
 ### src/main.rs
 
 ```rust
+use camino::Utf8Path as CaminoUtf8Path;
 use clap::{Parser, Subcommand, value_parser};
 use code_actions::functions::init_tracing_subscriber::init_tracing_subscriber;
 use code_actions::types::module_template::ModuleTemplate;
@@ -904,7 +921,7 @@ impl Cli {
                         suffix,
                     } => {
                         let suffix = suffix.unwrap_or_default();
-                        let path = Utf8Path::new(camino::Utf8Path::new(&parent));
+                        let path = Utf8Path::new(CaminoUtf8Path::new(&parent));
                         let filename = get_relative_path_anchor_subdir_name_suffix(path, &subdir, &stem, &suffix)?;
                         println!("{filename}");
                         Ok(())

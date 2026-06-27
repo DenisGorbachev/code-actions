@@ -256,7 +256,7 @@ pub struct UnsupportedItemError {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use syn::{ItemImpl, ItemStruct, parse_quote};
+    use syn::{ItemStruct, parse_quote};
 
     use super::*;
 

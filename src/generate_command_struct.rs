@@ -7,6 +7,7 @@ pub fn get_command_struct_token_stream(name: Ident) -> TokenStream {
     quote! {
         use clap::{Parser, value_parser};
         use errgonomic::handle;
+        use std::io;
         use std::path::PathBuf;
         use std::process::ExitCode;
         use thiserror::Error;
@@ -33,7 +34,7 @@ pub fn get_command_struct_token_stream(name: Ident) -> TokenStream {
         #[derive(Error, Debug)]
         pub enum #error_name {
             #[error("failed to read file at '{path}'")]
-            ReadToStringFailed { source: std::io::Error, path: PathBuf },
+            ReadToStringFailed { source: io::Error, path: PathBuf },
         }
     }
 }

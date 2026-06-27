@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use derive_more::Error;
 use fmt_derive::Display;
+use fs_err::{read_to_string as read_to_string_fs_err, write as write_fs_err};
 
 pub mod file_ext;
 
@@ -36,7 +37,7 @@ pub fn create_file_all<P: AsRef<Path>>(path_like: P) -> Result<File, CreateFileA
 pub fn modify_file_contents<InnerError, OuterError, Modify>(path: impl AsRef<Path>, modify: Modify) -> Result<(), OuterError>
 where
     Modify: FnOnce(String) -> Result<String, InnerError>,
-    OuterError: From<std::io::Error> + From<InnerError>,
+    OuterError: From<io::Error> + From<InnerError>,
 {
     let contents_old = read_to_string(path.as_ref())?;
     let contents_new = modify(contents_old)?;
@@ -57,10 +58,10 @@ pub fn write_all_to_file_if_not_exists<P: AsRef<Path>, B: AsRef<[u8]>>(filename:
 }
 
 pub fn find_replace_all<'a, 'b>(path: impl AsRef<Path>, iter: impl IntoIterator<Item = (&'a str, &'b str)>) -> io::Result<()> {
-    let mut contents = fs_err::read_to_string(path.as_ref())?;
+    let mut contents = read_to_string_fs_err(path.as_ref())?;
     for (from, to) in iter.into_iter() {
         contents = contents.replace(from, to);
     }
-    fs_err::write(path.as_ref(), contents)?;
+    write_fs_err(path.as_ref(), contents)?;
     Ok(())
 }

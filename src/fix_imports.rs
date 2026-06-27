@@ -4,14 +4,16 @@ use crate::types::outcome::Outcome;
 use crate::types::package_info::PackageInfo;
 use anyhow::anyhow;
 use duct::cmd;
+use fs_err::write;
+use prettyplease::unparse;
 use quote::ToTokens;
 use regex::Regex;
 use std::borrow::Cow;
 use std::fs::read_to_string;
 use std::path::Path;
-use syn::{File, Item, ItemMod, ItemUse, UseGlob, UsePath, UseTree, parse_file};
+use syn::{File, Item, ItemMod, ItemUse, UseGlob, UseGroup, UsePath, UseTree, Visibility, parse_file};
 use syn_more::new_item_use;
-use walkdir::{DirEntry, WalkDir};
+use walkdir::{DirEntry, Result as WalkdirResult, WalkDir};
 
 // TODO: use `yes` instead of `dry_run`
 pub fn fix_imports(anchor: &Utf8Path, yes: bool) -> Outcome {
@@ -34,7 +36,7 @@ pub fn fix_imports(anchor: &Utf8Path, yes: bool) -> Outcome {
     Ok(())
 }
 
-pub fn fix_imports_in_entry(entry_result: walkdir::Result<DirEntry>, yes: bool) -> Outcome {
+pub fn fix_imports_in_entry(entry_result: WalkdirResult<DirEntry>, yes: bool) -> Outcome {
     let entry = entry_result?;
     let path = entry.path();
     if path.extension().and_then(|s| s.to_str()) == Some("rs") {
@@ -51,7 +53,7 @@ pub fn fix_rust_file(path: &Path, yes: bool) -> Outcome {
     let file = parse_file(&content)?;
     let content_new = if is_aggregate_syn_file(&file) {
         let file = fix_aggregate_syn_file(file);
-        prettyplease::unparse(&file)
+        unparse(&file)
     } else {
         fix_regular_file(&content).to_string()
     };
@@ -59,7 +61,7 @@ pub fn fix_rust_file(path: &Path, yes: bool) -> Outcome {
         eprintln!("Already correct {}", path.display());
     } else if yes {
         eprintln!("Overwriting {}", path.display());
-        fs_err::write(path, content_new)?;
+        write(path, content_new)?;
     } else {
         eprintln!("Would overwrite (use --yes to overwrite) {}", path.display());
     }
@@ -89,7 +91,7 @@ pub fn fix_aggregate_syn_file(mut file: File) -> File {
         match item {
             Item::Mod(mut mod_item) => {
                 // Remove the `pub` modifier
-                mod_item.vis = syn::Visibility::Inherited;
+                mod_item.vis = Visibility::Inherited;
                 mod_items.push(mod_item);
             }
             Item::Use(use_item) => use_items.push(use_item),
@@ -121,7 +123,7 @@ pub fn fix_aggregate_syn_file(mut file: File) -> File {
                     star_token: Default::default(),
                 })),
             }));
-            new_use_item.vis = syn::Visibility::Public(Default::default());
+            new_use_item.vis = Visibility::Public(Default::default());
             // Copy attributes from mod item to use item, excluding #[cfg(test)]
             new_use_item.attrs.extend(mod_item.attrs.clone());
             use_items.push(new_use_item);
@@ -180,7 +182,7 @@ pub fn fix_use_tree(tree: UseTree) -> UseTree {
             colon2_token: use_path.colon2_token,
             tree: Box::new(fix_use_tree(*use_path.tree)),
         }),
-        UseTree::Group(use_group) => UseTree::Group(syn::UseGroup {
+        UseTree::Group(use_group) => UseTree::Group(UseGroup {
             brace_token: use_group.brace_token,
             items: use_group.items.into_iter().map(fix_use_tree).collect(),
         }),

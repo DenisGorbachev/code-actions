@@ -1,3 +1,5 @@
+use std::iter::once;
+
 use duct::cmd;
 
 use crate::types::outcome::Outcome;
@@ -13,14 +15,9 @@ pub fn generate_package_from_anchor_name(anchor: &Utf8Path, name: &str, args: &[
     let new_package_root_src = new_package_root.join("src");
     let new_package_root_path = new_package_root.as_path();
     let default_modules = &["types", "functions"];
-    cmd(
-        "cargo",
-        std::iter::once("new")
-            .chain(std::iter::once(name))
-            .chain(args.iter().cloned()),
-    )
-    .dir(workspace_root)
-    .run()?;
+    cmd("cargo", once("new").chain(once(name)).chain(args.iter().cloned()))
+        .dir(workspace_root)
+        .run()?;
     if args.contains(&"--lib") {
         let lib_rs = new_package_root_src.join("lib.rs");
         truncate(lib_rs)?;

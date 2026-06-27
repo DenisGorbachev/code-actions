@@ -3,7 +3,7 @@ use derive_more::{Deref, DerefMut};
 use derive_new::new;
 use fs_err::{read_to_string, write};
 use std::io;
-use toml_edit::DocumentMut;
+use toml_edit::{DocumentMut, TomlError};
 
 use crate::extensions::camino::utf8_path::Utf8Path;
 use crate::extensions::camino::utf8_path_buf::Utf8PathBuf;
@@ -52,5 +52,5 @@ impl TryFrom<Utf8PathBuf> for TomlFile {
 #[derive(derive_more::Error, fmt_derive::Display, derive_more::From, Debug)]
 pub enum TomlFileIoError {
     TheIoError(io::Error),
-    TheTomlEditError(toml_edit::TomlError),
+    TheTomlEditError(TomlError),
 }

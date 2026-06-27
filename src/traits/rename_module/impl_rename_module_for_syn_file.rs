@@ -1,8 +1,9 @@
 use crate::traits::rename_module::RenameModule;
 use derive_more::Error;
 use fmt_derive::Display;
+use syn::{File, Ident, Item, ItemUse, UseTree};
 
-impl RenameModule for &mut syn::File {
+impl RenameModule for &mut File {
     type Output = Result<(), SynFileRenameModuleError>;
 
     fn rename_module(self, module_name_old: &str, module_name_new: &str) -> Self::Output {
@@ -13,7 +14,7 @@ impl RenameModule for &mut syn::File {
 
         // Check if a module with the new name already exists
         for item in &self.items {
-            if let syn::Item::Mod(module) = item {
+            if let Item::Mod(module) = item {
                 if module.ident == module_name_new {
                     return Err(SynFileRenameModuleError::NameAlreadyExists(module_name_new.to_string()));
                 }
@@ -24,11 +25,11 @@ impl RenameModule for &mut syn::File {
         for item in &mut self.items {
             match item {
                 // Handle module declarations
-                syn::Item::Mod(module) if module.ident == module_name_old => {
-                    module.ident = syn::Ident::new(module_name_new, module.ident.span());
+                Item::Mod(module) if module.ident == module_name_old => {
+                    module.ident = Ident::new(module_name_new, module.ident.span());
                 }
                 // Handle use statements
-                syn::Item::Use(use_item) => {
+                Item::Use(use_item) => {
                     *use_item = rename_use_paths(use_item, module_name_old, module_name_new);
                 }
                 _ => {}
@@ -42,33 +43,33 @@ impl RenameModule for &mut syn::File {
 type ModuleName = String;
 
 // Helper functions
-fn rename_use_paths(use_item: &syn::ItemUse, old_name: &str, new_name: &str) -> syn::ItemUse {
+fn rename_use_paths(use_item: &ItemUse, old_name: &str, new_name: &str) -> ItemUse {
     let mut new_use_item = use_item.clone();
     rename_use_tree(&mut new_use_item.tree, old_name, new_name);
     new_use_item
 }
 
-fn rename_use_tree(tree: &mut syn::UseTree, old_name: &str, new_name: &str) {
+fn rename_use_tree(tree: &mut UseTree, old_name: &str, new_name: &str) {
     match tree {
         // For path::to::module
-        syn::UseTree::Path(path) => {
+        UseTree::Path(path) => {
             if path.ident == old_name {
-                path.ident = syn::Ident::new(new_name, path.ident.span());
+                path.ident = Ident::new(new_name, path.ident.span());
             }
             rename_use_tree(&mut path.tree, old_name, new_name);
         }
         // For nested imports like path::{a, b, c}
-        syn::UseTree::Group(group) => {
+        UseTree::Group(group) => {
             for item in &mut group.items {
                 rename_use_tree(item, old_name, new_name);
             }
         }
         // For glob imports like path::*
-        syn::UseTree::Glob(_) => {}
+        UseTree::Glob(_) => {}
         // For renamed imports like path::item as alias
-        syn::UseTree::Rename(_) => {}
+        UseTree::Rename(_) => {}
         // For single item imports like item
-        syn::UseTree::Name(_) => {}
+        UseTree::Name(_) => {}
     }
 }
 
@@ -106,7 +107,7 @@ pub struct Foo {}
 
     const BAR: &str = "bar";
 
-    fn input() -> syn::File {
+    fn input() -> File {
         parse_file(INPUT).unwrap()
     }
 

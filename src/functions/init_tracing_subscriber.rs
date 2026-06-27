@@ -3,11 +3,12 @@ pub fn init_tracing_subscriber() {
     use tracing_error::ErrorLayer;
     use tracing_subscriber::layer::SubscriberExt;
     use tracing_subscriber::util::SubscriberInitExt;
+    use tracing_subscriber::{EnvFilter, fmt};
 
-    let env_filter = tracing_subscriber::EnvFilter::builder()
+    let env_filter = EnvFilter::builder()
         .with_default_directive(LevelFilter::INFO.into())
         .from_env_lossy();
-    let subscriber = tracing_subscriber::fmt()
+    let subscriber = fmt()
         .with_env_filter(env_filter)
         // .with_max_level(tracing::Level::TRACE) // Set the maximum log level to TRACE
         .finish()

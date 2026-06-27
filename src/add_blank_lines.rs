@@ -64,10 +64,8 @@ mod tests {
     use super::*;
     use crate::extensions::camino::utf8_path_buf::Utf8PathBuf;
     use crate::test_helpers::{get_src_path, get_temp_bin_root};
-    use crate::types::outcome::Outcome;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
-    use std::fs;
 
     #[test]
     #[ignore]
