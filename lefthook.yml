@@ -3,6 +3,9 @@ pre-commit:
   parallel: true
   commands:
     gen:readme:
+      # skip because `mise run gen:readme` may fail in CI due to transient network errors (e.g. GitHub server not responding)
+      skip:
+        - run: test -n "${CI:-}"
       run: |
         set -eu
         mise run gen:readme
@@ -24,3 +27,15 @@ commit-msg:
   commands:
     commitlint:
       run: mise run commitlint -- --edit "$1"
+post-commit:
+  commands:
+    repair-index:
+      run: |
+        set -eu
+        unset GIT_INDEX_FILE
+        # Repair stale staged entries left by pathspec commits after pre-commit fixers updated the temporary commit index.
+        git diff --cached --name-only HEAD -- | while IFS= read -r path; do
+          if git diff --quiet HEAD -- "$path"; then
+            git add --all -- "$path"
+          fi
+        done

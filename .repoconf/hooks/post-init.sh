@@ -7,6 +7,7 @@ set -xeuo pipefail
 dir=$(realpath "${usage_dir:?}")
 name_new_default="${usage_name:-$(basename "$dir")}"
 cargo_toml="$dir/Cargo.toml"
+fnox_toml="$dir/fnox.toml"
 #mise_toml="$dir/mise.toml"
 
 read -r -p "Rust package name (default: $name_new_default): " name_new
@@ -40,6 +41,14 @@ fi
   name_new_snake_case=$(ccase --to snake "$name_new")
   name_old_kebab_case=$(ccase --to kebab "$name_old")
   name_new_kebab_case=$(ccase --to kebab "$name_new")
+  origin_url=$(git -C "$dir" remote get-url origin)
+  origin_url=${origin_url%/}
+  git_repo_name=${origin_url##*/}
+  git_repo_name=${git_repo_name%.git}
+  if [[ -z "$git_repo_name" ]]; then
+    echo "failed to extract git repo name from origin remote URL: $origin_url" >&2
+    exit 1
+  fi
   repo_url=$(cd "$dir" && gh repo view --json url | jq -r .url)
 
   tomli set -f "$cargo_toml" "package.name" "$name_new" | sponge "$cargo_toml"
@@ -53,6 +62,10 @@ fi
   rg --files-with-matches "$name_old_snake_case" "$dir" | xargs gsed -i "s/\b$name_old_snake_case\b/$name_new_snake_case/g"
   rg --files-with-matches "$name_old_kebab_case" "$dir" | xargs gsed -i "s/\b$name_old_kebab_case\b/$name_new_kebab_case/g"
   set -e
+
+  # Using git repo name instead of folder name because a workspace can contain multiple checkouts of the same repository in different folders, and some repos contain Cargo.toml with `workspace` but not `package`, so we can't use `package.name`
+  tomli set -f "$fnox_toml" "providers.keychain.service" "$git_repo_name" | sponge "$fnox_toml"
+  tomli set -f "$fnox_toml" "providers.pass.prefix" "$git_repo_name/" | sponge "$fnox_toml"
 
   mise exec -- lefthook install
 
