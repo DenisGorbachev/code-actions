@@ -105,12 +105,11 @@ pub fn fix_aggregate_syn_file(mut file: File) -> File {
     for mod_item in non_test_mod_items {
         let mod_name = &mod_item.ident;
         let corresponding_use = use_items.iter().find(|use_item| {
-            if let UseTree::Path(use_path) = &use_item.tree {
-                if use_path.ident == *mod_name {
-                    if let UseTree::Glob(_) = &*use_path.tree {
-                        return true;
-                    }
-                }
+            if let UseTree::Path(use_path) = &use_item.tree
+                && use_path.ident == *mod_name
+                && let UseTree::Glob(_) = &*use_path.tree
+            {
+                return true;
             }
             false
         });

@@ -14,10 +14,10 @@ impl RenameModule for &mut File {
 
         // Check if a module with the new name already exists
         for item in &self.items {
-            if let Item::Mod(module) = item {
-                if module.ident == module_name_new {
-                    return Err(SynFileRenameModuleError::NameAlreadyExists(module_name_new.to_string()));
-                }
+            if let Item::Mod(module) = item
+                && module.ident == module_name_new
+            {
+                return Err(SynFileRenameModuleError::NameAlreadyExists(module_name_new.to_string()));
             }
         }
 

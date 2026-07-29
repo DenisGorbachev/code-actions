@@ -36,18 +36,18 @@ pub fn fix_impossible_derives(anchor: &Utf8Path) -> Outcome {
 }
 
 pub fn filter_derives(attr: &mut Attribute, filter: &impl FilterOf<Ident>) {
-    if let Meta::List(ref mut meta_list) = attr.meta {
-        if meta_list.path.is_ident("derive") {
-            let result = meta_list.parse_args_with(PunctuatedIdents::parse_terminated);
-            match result {
-                Ok(punctuated) => {
-                    let filtered = punctuated.into_iter().filter(|ident| filter.filter(ident));
-                    let punctuated_new = PunctuatedIdents::from_iter(filtered);
-                    meta_list.tokens = punctuated_new.to_token_stream();
-                }
-                Err(_) => {
-                    // intentionally do nothing
-                }
+    if let Meta::List(ref mut meta_list) = attr.meta
+        && meta_list.path.is_ident("derive")
+    {
+        let result = meta_list.parse_args_with(PunctuatedIdents::parse_terminated);
+        match result {
+            Ok(punctuated) => {
+                let filtered = punctuated.into_iter().filter(|ident| filter.filter(ident));
+                let punctuated_new = PunctuatedIdents::from_iter(filtered);
+                meta_list.tokens = punctuated_new.to_token_stream();
+            }
+            Err(_) => {
+                // intentionally do nothing
             }
         }
     }

@@ -104,7 +104,7 @@ pub fn filter_map_impossible_derives(messages: impl IntoIterator<Item = Compiler
     })
 }
 
-/// https://doc.rust-lang.org/error_codes/E0277.html
+/// [E0277](https://doc.rust-lang.org/error_codes/E0277.html)
 pub fn filter_map_impossible_derive_e0277(diagnostic: Diagnostic) -> Option<Ident> {
     // Find the primary span
     let primary_span = diagnostic.spans.iter().find(|span| span.is_primary)?;
@@ -124,17 +124,17 @@ pub fn filter_map_impossible_derive_e0277(diagnostic: Diagnostic) -> Option<Iden
     let attr = parse_attribute(macro_decl_name)?;
 
     // Ensure it has the structure of a single MetaList with path.is_ident("derive") and a single TokenTree
-    if let Meta::List(meta_list) = attr.meta {
-        if meta_list.path.is_ident("derive") {
-            let mut tokens_iter = meta_list.tokens.into_iter();
-            let token_tree = tokens_iter.next()?;
-            if tokens_iter.next().is_some() {
-                // expecting only a single token_tree
-                return None;
-            }
-            if let TokenTree::Ident(ident) = token_tree {
-                return Some(ident);
-            }
+    if let Meta::List(meta_list) = attr.meta
+        && meta_list.path.is_ident("derive")
+    {
+        let mut tokens_iter = meta_list.tokens.into_iter();
+        let token_tree = tokens_iter.next()?;
+        if tokens_iter.next().is_some() {
+            // expecting only a single token_tree
+            return None;
+        }
+        if let TokenTree::Ident(ident) = token_tree {
+            return Some(ident);
         }
     }
 
