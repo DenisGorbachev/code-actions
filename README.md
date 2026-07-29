@@ -51,6 +51,10 @@ Options:
   -V, --version  Print version
 ```
 
+## Other packages
+
+This workspace has no other packages.
+
 ## Gratitude
 
 Like the project? [⭐ Star this repo](https://github.com/DenisGorbachev/code-actions) on GitHub!
