@@ -507,25 +507,25 @@ An identifier which could be used to refer to the chat thread in the subsequent 
 
 #### Requirements
 
-* Every input data type must derive `Serialize` and `Deserialize`
-* Every `Option`-wrapped field must have attributes:
-  * `#[serde(skip_serializing_if = "Option::is_none")]`
-* Every `OffsetDateTime` field must have attributes:
-  * `#[serde(with = "time::serde::rfc3339")]`
-* Every `Option<OffsetDateTime>` field must have attributes:
-  * `#[serde(with = "time::serde::rfc3339::option")]`
-* Every field that stores a physical value must be serialized as a map that includes at least two fields: `value` and `unit`
-  * `value` must be a primitive type
-  * `unit` must be a string that contains the unit name in singular form (for example: "nanosecond", "second", "minute", "kilogram", "meter")
-    * `unit` may contain a prefix (for example: "nano", "kilo")
+- Every input data type must derive `Serialize` and `Deserialize`
+- Every `Option`-wrapped field must have attributes:
+  - `#[serde(skip_serializing_if = "Option::is_none")]`
+- Every `OffsetDateTime` field must have attributes:
+  - `#[serde(with = "time::serde::rfc3339")]`
+- Every `Option<OffsetDateTime>` field must have attributes:
+  - `#[serde(with = "time::serde::rfc3339::option")]`
+- Every field that stores a physical value must be serialized as a map that includes at least two fields: `value` and `unit`
+  - `value` must be a primitive type
+  - `unit` must be a string that contains the unit name in singular form (for example: "nanosecond", "second", "minute", "kilogram", "meter")
+    - `unit` may contain a prefix (for example: "nano", "kilo")
 
 #### Notes
 
-* It is recommended to use `serde_with` to reduce the code size by avoiding custom `Serialize`/`Deserialize` impls
+- It is recommended to use `serde_with` to reduce the code size by avoiding custom `Serialize`/`Deserialize` impls
 
 ### Guidelines for `subtype`
 
-* The macro calls that begin with `subtype` (for example, `subtype!` and `subtype_string!`) expand to newtypes.
+- The macro calls that begin with `subtype` (for example, `subtype!` and `subtype_string!`) expand to newtypes.
 
 ### Guidelines for `clap`
 
@@ -534,6 +534,10 @@ An identifier which could be used to refer to the chat thread in the subsequent 
 - For each enum in project:
   - If enum has only unit variants and doesn't implement `Error`
     - Then: it must derive `ValueEnum` with `#[value(rename_all = "kebab-case")]`
+- For each field in a type that derives `Parser`:
+  - If this field's type is local:
+    - Then: this type must implement `FromStr`
+      - Rationale: `clap` parses types that implement `FromStr` directly without `value_parser`
 
 ### CLI guidelines
 

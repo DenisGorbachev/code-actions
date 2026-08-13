@@ -5,7 +5,7 @@ pub fn get_command_struct_token_stream(name: Ident) -> TokenStream {
     let label = format!("{name}RunError");
     let error_name = Ident::new(&label, Span::call_site());
     quote! {
-        use clap::{Parser, value_parser};
+        use clap::Parser;
         use errgonomic::handle;
         use std::io;
         use std::path::PathBuf;
@@ -15,7 +15,7 @@ pub fn get_command_struct_token_stream(name: Ident) -> TokenStream {
 
         #[derive(Parser, Clone, Debug)]
         pub struct #name {
-            #[arg(short, long, value_parser = value_parser!(PathBuf))]
+            #[arg(short, long)]
             path: PathBuf,
         }
 
