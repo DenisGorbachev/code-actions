@@ -704,8 +704,7 @@ fnox = "1.33.1"
 fd = "10.4.2"
 "github:ewhauser/shuck" = "0.2.2"
 "aqua:nushell/nushell" = "0.116.1"
-# nu-lint's dependencies require a newer compiler than this project's toolchain.
-"cargo:nu-lint" = { version = "1.8.0", install_env = { RUSTUP_TOOLCHAIN = "1.99.1" } }
+"cargo:nu-lint" = "1.8.0"
 "github:nushell/nufmt" = "0.1.6"
 "aqua:rvben/rumdl" = "0.3.0"
 "npm:@commitlint/config-conventional" = "19.6.0"
@@ -914,6 +913,9 @@ name = "code-actions"
 title = "Rust Code Actions"
 readme = { }
 
+[workspace.lints.cargo]
+unused_dependencies = "deny"
+
 [workspace.lints.rust]
 redundant_imports = "deny"
 unused_import_braces = "deny"
@@ -921,6 +923,8 @@ unused_import_braces = "deny"
 # unused_qualifications = "deny"
 
 [workspace.lints.clippy]
+# Rust 1.100 reports redundant fields inside derive macros: https://github.com/rust-lang/rust-clippy/issues/17525.
+redundant_field_names = "allow"
 absolute_paths = "deny"
 arithmetic_side_effects = "deny"
 
@@ -996,8 +1000,6 @@ ignored = ["stub-macro"]
 ### src/lib.rs
 
 ```rust
-#![cfg_attr(not(test), deny(unused_crate_dependencies))]
-
 pub mod add_dependency;
 pub mod constants;
 pub mod experiment;

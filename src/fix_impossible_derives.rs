@@ -18,45 +18,49 @@ pub type PunctuatedIdents = Punctuated<Ident, Token![,]>;
 pub fn fix_impossible_derives(anchor: &Utf8Path) -> Outcome {
     let package_info = PackageInfo::try_from(anchor)?;
     let project_root = package_info.project_root().require()?;
-    let compiler_messages = get_clippy_compiler_messages(project_root.as_path())?;
-    let impossible_derives = filter_map_impossible_derives(compiler_messages).collect_vec();
     let manifest_path_buf = project_root.manifest_path_buf();
-    modify_and_format_rust_file(anchor, manifest_path_buf, |mut file| -> Outcome<File> {
-        let item = get_main_item_mut(&mut file).with_context(|| format!("Main item not found in \"{anchor}\""))?;
-        let attributes = get_struct_or_enum_attrs_mut(item).context("Main item must be a struct or enum")?;
-        remove_derives_many(attributes, &impossible_derives);
-        // TODO: search for a way to modify Rust code while preserving comments (options: see rust-analyzer)
-        // TODO: evaluate the possibility of modifying the code in the following way:
-        // - prepare the new item
-        // - calculate the replacement/insertion span
-        // - perform replacement/insertion on the file contents directly
-        // this would preserve the comments and formatting at least in the unmodified section
-        Ok(file)
-    })
+    loop {
+        let compiler_messages = get_clippy_compiler_messages(project_root.as_path())?;
+        let impossible_derives = filter_map_impossible_derives(compiler_messages).collect_vec();
+        let mut changed = false;
+        modify_and_format_rust_file(anchor, &manifest_path_buf, |mut file| -> Outcome<File> {
+            let item = get_main_item_mut(&mut file).with_context(|| format!("Main item not found in \"{anchor}\""))?;
+            let attributes = get_struct_or_enum_attrs_mut(item).context("Main item must be a struct or enum")?;
+            changed = remove_derives_many(attributes, &impossible_derives);
+            Ok(file)
+        })?;
+        if !changed {
+            return Ok(());
+        }
+    }
 }
 
-pub fn filter_derives(attr: &mut Attribute, filter: &impl FilterOf<Ident>) {
+pub fn filter_derives(attr: &mut Attribute, filter: &impl FilterOf<Ident>) -> bool {
     if let Meta::List(ref mut meta_list) = attr.meta
         && meta_list.path.is_ident("derive")
     {
         let result = meta_list.parse_args_with(PunctuatedIdents::parse_terminated);
         match result {
             Ok(punctuated) => {
+                let previous_len = punctuated.len();
                 let filtered = punctuated.into_iter().filter(|ident| filter.filter(ident));
                 let punctuated_new = PunctuatedIdents::from_iter(filtered);
+                let changed = punctuated_new.len() != previous_len;
                 meta_list.tokens = punctuated_new.to_token_stream();
+                return changed;
             }
             Err(_) => {
                 // intentionally do nothing
             }
         }
     }
+    false
 }
 
-pub fn remove_derives_many(attributes: &mut [Attribute], filter: &impl FilterOf<Ident>) {
+pub fn remove_derives_many(attributes: &mut [Attribute], filter: &impl FilterOf<Ident>) -> bool {
     attributes
         .iter_mut()
-        .for_each(move |attr| filter_derives(attr, filter));
+        .fold(false, |changed, attr| filter_derives(attr, filter) | changed)
 }
 
 pub trait FilterOf<T> {

@@ -38,6 +38,9 @@ name = "code-actions"
 title = "Rust Code Actions"
 readme = { }
 
+[workspace.lints.cargo]
+unused_dependencies = "deny"
+
 [workspace.lints.rust]
 redundant_imports = "deny"
 unused_import_braces = "deny"
@@ -45,6 +48,8 @@ unused_import_braces = "deny"
 # unused_qualifications = "deny"
 
 [workspace.lints.clippy]
+# Rust 1.100 reports redundant fields inside derive macros: https://github.com/rust-lang/rust-clippy/issues/17525.
+redundant_field_names = "allow"
 absolute_paths = "deny"
 arithmetic_side_effects = "deny"
 
